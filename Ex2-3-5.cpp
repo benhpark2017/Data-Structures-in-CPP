@@ -3,7 +3,7 @@
  * Data Structures in C++.
  */
 
-/**************************main.cpp******************************/
+/*******************************main.cpp*********************************/
 #include <iostream>
 #include "Polynomial.h"
 
@@ -26,21 +26,27 @@ int main() {
     std::cout << "Entered polynomial p2: " << p2 << std::endl;
 
     // Evaluate polynomials p1 and p2 at 2.0
-    std::cout << "The value of polynomial p1 is: " 
+    std::cout << "The value of polynomial p1 at x = 2.0 is: " 
               << p1.Evaluate(2.0) << std::endl;
-    std::cout << "The value of polynomial p2 is: " 
+    std::cout << "The value of polynomial p2 at x = 2.0 is: " 
               << p2.Evaluate(2.0) << std::endl;
 
     // Add p1 and p2
     Polynomial p3 = p1.Add(p2);
     std::cout << "p1 + p2 = " << p3 << std::endl;
     
+	// Multiply p1 and p2
     Polynomial p4 = p1.Multiply(p2);
     std::cout << "p1 * p2 = " << p4 << std::endl;
 
+    // Evaluate polynomials p3 and p4 at 2.0
+    std::cout << "The value of the sum polynomial p3 at x = 2.0 is: " 
+              << p3.Evaluate(2.0) << std::endl;
+    std::cout << "The value of the product polynomial p4 at x = 2.0 is: " 
+              << p4.Evaluate(2.0) << std::endl;
+
     return 0;
 }
-
 
 
 
@@ -49,7 +55,6 @@ int main() {
 #define POLYNOMIAL_H
 
 #include <iostream>
-#include <algorithm>  // For std::copy
 
 class Polynomial;  // Forward declaration
 
@@ -91,7 +96,7 @@ public:
     ~Polynomial();  // Destructor to release allocated memory
 };
 
-#endif  // POLYNOMIAL_H
+#endif //POLYNOMIAL_H
 
 
 
@@ -152,18 +157,39 @@ Polynomial Polynomial::Add(const Polynomial& b) const {
 Polynomial Polynomial::Multiply(const Polynomial& b) const {
     Polynomial c;
 
+    // Initialize c with the maximum possible capacity required
+    c.capacity = terms * b.terms;
+    c.termArray = new Term[c.capacity];
+    c.terms = 0;
+
+    // Multiply each term of the first polynomial with each term of the second polynomial
     for (int i = 0; i < terms; i++) {
         for (int j = 0; j < b.terms; j++) {
             float newCoef = termArray[i].coef * b.termArray[j].coef;
             int newExp = termArray[i].expon + b.termArray[j].expon;
-
-            // Add the new term to the resulting polynomial
             c.NewTerm(newCoef, newExp);
         }
     }
 
-    return c;
+    // Combine terms with the same exponent
+    Polynomial result;
+    for (int i = 0; i < c.terms; i++) {
+        if (c.termArray[i].coef != 0) {
+            float coefSum = c.termArray[i].coef;
+            for (int j = i + 1; j < c.terms; j++) {
+                if (c.termArray[i].expon == c.termArray[j].expon && c.termArray[j].coef != 0) {
+                    coefSum += c.termArray[j].coef;
+                    c.termArray[j].coef = 0;  // Mark this term as used
+                }
+            }
+            if (coefSum != 0) {
+                result.NewTerm(coefSum, c.termArray[i].expon);
+            }
+        }
+    }
+    return result;
 }
+
 
 float Polynomial::Evaluate(float x) const {
     float result = 0;
