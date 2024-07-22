@@ -1,5 +1,5 @@
 /**
- * Solutions to Chapter 4, Section 2, Exercises from 1 to 2 of Horowitz's
+ * Solutions to Chapter 4, Section 2, Exercise 3 of Horowitz's
  * Fundamentals of Data Structures in C++.
  */
 
