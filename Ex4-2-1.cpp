@@ -97,6 +97,7 @@ int List::Length() {
     return len;
 }
 
+//Solution to Chapter 4, Section 2, Exercise 2
 void List::Delete(ListNode* x) {
     if (first == nullptr) {
         std::cout << "The linked list is empty." <<std::endl;
