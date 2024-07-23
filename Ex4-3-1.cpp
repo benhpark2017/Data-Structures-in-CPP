@@ -1,21 +1,19 @@
 /**
- * Solutions to Chapter 4, Section 3, Exercise 1 and 2 of Horowitz's
+ * Solutions to Chapter 4, Section 3, Exercises 1, 2, and 3 of Horowitz's
  * Fundamentals of Data Structures in C++.
  */
 
 /********************************main.cpp**********************************/
+#include <iostream>
 #include "List.h"
 
 int main() {
     List<int> intList;
-    ListNode<int> *ListPtr = intList.getFirst();
-
-    for (int i = 0; i < 10; i++)
-        intList.InsertBack(i + 11);
+    for (int i = 1; i <= 10; i++) {
+        intList.InsertBack(i);
+    }
     
-    std::cout << "List Output: " << intList << std::endl;
-    
-    std::cout << std::endl;
+    std::cout << "List: " << intList << std::endl;
 
     try {
         int minValue = intList.findMin();
@@ -23,10 +21,12 @@ int main() {
     } catch (const std::exception &e) {
         std::cerr << e.what() << std::endl;
     }
+    
+    int result = sumOfProducts(intList);
+    std::cout << "Sum of products: " << result << std::endl;
 
     return 0;
 }
-
 
 
 /*********************************List.h***********************************/
@@ -95,7 +95,8 @@ public:
     Boolean NextNotNull() const;
     Type* First();
     Type* Next();
-
+    const ListNode<Type>* CurrentPosition() const;
+    
 private:
     const List<Type> &list;
     ListNode<Type> *current;
@@ -105,14 +106,16 @@ private:
 template <class Type>
 std::ostream& operator<<(std::ostream& os, const List<Type>& list);
 
+// Declaration of the sumOfProducts function
+template <class Type>
+Type sumOfProducts(const List<Type>& list);
+
 #include "List.cpp"
 
 #endif // LIST_H
 
 
-
 /********************************List.cpp**********************************/
-
 #ifndef LIST_CPP
 #define LIST_CPP
 
@@ -288,6 +291,32 @@ Type* ListIterator<Type>::Next() {
         return current != nullptr ? &current->data : nullptr;
     }
     return nullptr;
+}
+
+template <class Type>
+const ListNode<Type>* ListIterator<Type>::CurrentPosition() const {
+    return current;
+}
+
+template <class Type>
+Type sumOfProducts(const List<Type>& list) {
+    ListIterator<Type> iter1(list);
+    ListIterator<Type> iter2(list);
+    
+    // Move iter2 5 positions ahead
+    for (int i = 0; i < 5 && iter2.NotNull(); ++i) {
+        iter2.Next();
+    }
+    
+    Type sum = 0;
+    
+    while (iter2.NotNull()) {
+        sum += iter1.getData() * iter2.getData();
+        iter1.Next();
+        iter2.Next();
+    }
+    
+    return sum;
 }
 
 #endif //LIST_CPP
