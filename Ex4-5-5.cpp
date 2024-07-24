@@ -6,7 +6,6 @@
 /*********************************main.cpp*************************************/
 #include "LinkedStack.h"
 #include <iostream>
-using namespace std;
 
 int main() {
     LinkedStack<int> intLinkedStack;
@@ -14,10 +13,10 @@ int main() {
     for (int i = 0; i < 5; i++)
         intLinkedStack.Push(i + 1);
 
-    cout << "Stack output:" << endl;
-    cout << intLinkedStack;
+    std::cout << "Stack output:" << std::endl;
+    std::cout << intLinkedStack;
 
-    cout << "Top: " << intLinkedStack.Peek() << endl;
+    std::cout << "Top: " << intLinkedStack.Peek() << std::endl;
 
     for (int i = 0; i < 5; i++)
         intLinkedStack.Pop();
