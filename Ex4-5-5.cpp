@@ -27,16 +27,17 @@ int main() {
 
 
 /******************************LinkedStack.h**********************************/
+/******************************LinkedStack.h**********************************/
 
 #ifndef LINKEDSTACK_H
 #define LINKEDSTACK_H
 
-#include "ListNode.h"
+#include "StackNode.h"
 
 template <class Type>
 class LinkedStack {
 private:
-    ListNode<Type> *top;
+    StackNode<Type> *top;
 
 public:
     LinkedStack() : top(nullptr) { }
@@ -59,6 +60,8 @@ public:
 
 
 
+
+
 /******************************LinkedStack.cpp*********************************/
 
 #ifndef LINKEDSTACK_CPP
@@ -68,7 +71,7 @@ public:
 
 template <class Type>
 void LinkedStack<Type>::Push(const Type &item) {
-    top = new ListNode<Type>(item, top);
+    top = new StackNode<Type>(item, top);
     cout << item << " has been added" << endl;
 }
 
@@ -78,7 +81,7 @@ void LinkedStack<Type>::Pop() {
         cout << "Stack is empty, cannot pop" << endl;
         return;
     }
-    ListNode<Type> *delNode = top;
+    StackNode<Type> *delNode = top;
     cout << top->data << " has been removed" << endl;
     top = top->link;
     delete delNode;
@@ -89,9 +92,11 @@ Type &LinkedStack<Type>::Peek() const {
     return top->data; // Return top
 }
 
+
+
 template <class Type>
 ostream &operator<<(ostream &os, const LinkedStack<Type> &ls) {
-    ListNode<Type> *cur = ls.top; // To not affect Pop
+    StackNode<Type> *cur = ls.top; // To not affect Pop
     while (cur != nullptr) {
         os << cur->data;
         if (cur->link != nullptr) {
@@ -109,11 +114,10 @@ template class LinkedStack<int>;
 #endif //LINKEDSTACK_CPP
 
 
+/*******************************StackNode.h***********************************/
 
-/*******************************ListNode.h***********************************/
-
-#ifndef LISTNODE_H
-#define LISTNODE_H
+#ifndef STACKNODE_H
+#define STACKNODE_H
 
 #include <iostream>
 using namespace std;
@@ -122,18 +126,16 @@ template <class Type>
 class LinkedStack;
 
 template <class Type>
-class ListNode {
+class StackNode {
+    friend class LinkedStack<Type>;
 private:
     Type data;
-    ListNode<Type> *link;
+    StackNode<Type> *link;
+    StackNode(Type element = 0, StackNode *next = nullptr) : data(element), link(next) { };
 
 public:
-    ListNode(Type element = 0, ListNode *next = nullptr) : data(element), link(next) { }
-
-    friend class LinkedStack<Type>;
-
     template <class KeyType>
     friend ostream &operator<<(ostream &os, const LinkedStack<KeyType> &ls);
 };
 
-#endif // LISTNODE_H
+#endif // STACKNODE_H
