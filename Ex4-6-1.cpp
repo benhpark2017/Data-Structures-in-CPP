@@ -121,7 +121,7 @@ void SinglyLinkedList<T>::append(T data) {
 }
 
 // Overload the << operator
-template<typename T>
+template <class T>
 std::ostream& operator<<(std::ostream& os, const SinglyLinkedList<T>& list) {
     if (list.head == nullptr) {
         return os << "nullptr";
