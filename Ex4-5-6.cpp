@@ -32,14 +32,14 @@ int main() {
 #ifndef LINKEDQUEUE_H
 #define LINKEDQUEUE_H
 
-#include "ListNode.h"
+#include "QueueNode.h"
 #include <iostream>
 
 template <class Type>
 class LinkedQueue {
 private:
-    ListNode<Type>* front;
-    ListNode<Type>* rear;
+    QueueNode<Type>* front;
+    QueueNode<Type>* rear;
 
 public:
     LinkedQueue() : front(NULL), rear(NULL) {}
@@ -61,6 +61,7 @@ public:
 #include "LinkedQueue.cpp"
 
 #endif // LINKEDQUEUE_H
+
 
 
 
@@ -89,10 +90,10 @@ template <class Type>
 void LinkedQueue<Type>::Enqueue(const Type& item) {
     if (isEmpty()) {
         std::cout << item << " added" << std::endl;
-        front = rear = new ListNode<Type>(item, 0); // Empty queue
+        front = rear = new QueueNode<Type>(item, 0); // Empty queue
     } else {
         std::cout << item << " added" << std::endl;
-        rear = rear->link = new ListNode<Type>(item, 0); // Insert at rear
+        rear = rear->link = new QueueNode<Type>(item, 0); // Insert at rear
     }
 }
 
@@ -103,7 +104,7 @@ void LinkedQueue<Type>::Dequeue() {
         return;
     }
 
-    ListNode<Type>* delNode = front;
+    QueueNode<Type>* delNode = front;
     std::cout << front->data << " removed" << std::endl;
     front = front->link;
     delete delNode;
@@ -111,7 +112,7 @@ void LinkedQueue<Type>::Dequeue() {
 
 template <class KeyType>
 std::ostream& operator<<(std::ostream& os, LinkedQueue<KeyType>& lq) {
-    ListNode<KeyType>* cur = lq.front;
+    QueueNode<KeyType>* cur = lq.front;
     while (true) {
         if (cur == lq.rear) {
             os << cur->data << " ";
@@ -135,9 +136,10 @@ template std::ostream& operator<<(std::ostream& os, LinkedQueue<int>& lq);
 
 
 
-/********************************ListNode.h************************************/
-#ifndef LISTNODE_H
-#define LISTNODE_H
+
+/********************************QueueNode.h************************************/
+#ifndef QUEUENODE_H
+#define QUEUENODE_H
 
 #include <iostream>
 
@@ -145,17 +147,17 @@ template <class Type>
 class LinkedQueue;
 
 template <class Type>
-class ListNode {
+class QueueNode {
+    friend class LinkedQueue<Type>;
+    
   private:
     Type data;
-    ListNode<Type>* link;
+    QueueNode<Type>* link;
+    QueueNode(Type element = 0, QueueNode* next = NULL) : data(element), link(next) {}
 
   public:
-    ListNode(Type element = 0, ListNode* next = NULL) : data(element), link(next) {}
-
-    friend class LinkedQueue<Type>;
     template <class KeyType>
     friend std::ostream& operator<<(std::ostream& os, LinkedQueue<KeyType>& lq);
 };
 
-#endif // LISTNODE_H
+#endif // QUEUENODE_H
