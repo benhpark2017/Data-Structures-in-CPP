@@ -118,7 +118,7 @@ public:
     void Reverse();
     Type findMin() const;
     void deleteEveryOtherNode();
-    CircList<Type> mergeLists(CircList<Type>& x, CircList<Type>& y); // I need help with this function.
+    CircList<Type> mergeLists(CircList<Type>& x, CircList<Type>& y);
     
 private:
     ListNode<Type> *last;
