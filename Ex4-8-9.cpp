@@ -1,8 +1,8 @@
 /**
- * Solutions to Chapter 4, Section 7, Exercises 1 to 5 and 9 of Horowitz's
+ * Solutions to Chapter 4, Section 8, Exercises 1 to 5 and 9 of Horowitz's
  * Fundamentals of Data Structures in C++.
  * Note that this self-contained solution to Exercise 9 includes solutions
- * of numbered exercises 1 through 5.
+ * to numbered exercises 1 through 5.
  */
 
 /***********************************main.cpp***********************************/
