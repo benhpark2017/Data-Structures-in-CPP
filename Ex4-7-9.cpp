@@ -30,28 +30,29 @@ int main() {
     std::cout << "Second matrix:" << std::endl;
     std::cout << m2;
     
-    sum = m1 + m2;
-    std::cout << "Result of addition:" << std::endl;
-    std::cout << sum;
-    
-    // Testing difference of two matrices.
-    difference = m1 - m2;
-    std::cout << "Result of subtraction:" << std::endl;
-    std::cout << difference;
-    
     // Testing copy constructor (checked.)
     Matrix m3(m1);
     std::cout << "Copy of first matrix:" << std::endl;
-    std::cout << m3;    
+    std::cout << m3;
+    
+    // Testing sum of two sparse matrices. (checked.)
+    sum = m1 + m2;
+    std::cout << "Result of addition:" << std::endl;
+    std::cout << sum;
     
     // Testing transpose of a sparse matrix (checked.)
     transpose = Matrix::Transpose(m1);
     std::cout << "Result of Transpose:" << std::endl;
     std::cout << transpose;
     
-    // Testing product of two sparse matrices. (checked.)
+    // Testing difference of two matrices. (checked.)
+    difference = m1 - m2;
+    std::cout << "Result of subtraction:" << std::endl;
+    std::cout << difference;
+    
+    // Testing matrix product of two matrices. (checked.)
     product = m1 * m2;
-    std::cout << "Result of multiplication:" << std::endl;
+    std::cout << "Result of matrix product:" << std::endl;
     std::cout << product;
     
     return 0;
@@ -300,7 +301,6 @@ Matrix operator+(const Matrix& a, const Matrix& b) {
     return result;
 } 
 
-
 Matrix operator-(const Matrix& a, const Matrix& b) {
     if (a.headNode->triple.row != b.headNode->triple.row || 
         a.headNode->triple.col != b.headNode->triple.col) {
@@ -359,77 +359,6 @@ Matrix operator-(const Matrix& a, const Matrix& b) {
         
         if (aRowHead != a.headNode) aRowHead = aRowHead->next;
         if (bRowHead != b.headNode) bRowHead = bRowHead->next;
-    }
-
-    // Link row heads
-    for (int i = 0; i < rows - 1; i++) {
-        rowHeads[i]->next = rowHeads[i + 1];
-    }
-    rowHeads[rows - 1]->next = result.headNode;
-    result.headNode->right = rowHeads[0];
-
-    delete[] rowHeads;
-    return result;
-}
-
-Matrix operator*(const Matrix& a, const Matrix& b) {
-    if (a.headNode->triple.col != b.headNode->triple.row) {
-        throw std::invalid_argument("Matrix dimensions do not match for multiplication");
-    }
-
-    Matrix result;
-    Triple headTriple = {a.headNode->triple.row, b.headNode->triple.col, 0};
-    result.headNode = new MatrixNode(FALSE, &headTriple);
-    int rows = result.headNode->triple.row;
-    int cols = result.headNode->triple.col;
-
-    // Create head nodes for rows in the result matrix
-    MatrixNodePtr* rowHeads = new MatrixNodePtr[rows];
-    for (int i = 0; i < rows; i++) {
-        rowHeads[i] = new MatrixNode(TRUE, nullptr);
-        rowHeads[i]->right = rowHeads[i];  // Initialize right pointer
-    }
-
-    // Perform matrix multiplication
-    MatrixNodePtr aRowHead = a.headNode->right;
-    for (int i = 0; i < rows; i++) {
-        if (aRowHead == a.headNode) break;  // No more non-zero rows in a
-
-        MatrixNodePtr bColHead = b.headNode->right;
-        for (int j = 0; j < cols; j++) {
-            if (bColHead == b.headNode) break;  // No more non-zero columns in b
-
-            int sum = 0;
-            MatrixNodePtr aPtr = aRowHead->right;
-            MatrixNodePtr bPtr = bColHead->right;
-
-            while (aPtr != aRowHead && bPtr != bColHead) {
-                if (aPtr->triple.col < bPtr->triple.row) {
-                    aPtr = aPtr->right;
-                } else if (aPtr->triple.col > bPtr->triple.row) {
-                    bPtr = bPtr->down;
-                } else {
-                    sum += aPtr->triple.value * bPtr->triple.value;
-                    aPtr = aPtr->right;
-                    bPtr = bPtr->down;
-                }
-            }
-
-            if (sum != 0) {
-                Triple t = {i, j, sum};
-                MatrixNodePtr newNode = new MatrixNode(FALSE, &t);
-                MatrixNodePtr rowPrev = rowHeads[i];
-                while (rowPrev->right != rowHeads[i] && rowPrev->right->triple.col < j) {
-                    rowPrev = rowPrev->right;
-                }
-                newNode->right = rowPrev->right;
-                rowPrev->right = newNode;
-                result.headNode->triple.value++;  // Increment non-zero count
-            }
-
-            bColHead = bColHead->next;
-        }
-        aRowHead = aRowHead->next;
     }
 
     // Link row heads
@@ -642,5 +571,87 @@ Matrix Matrix::Transpose(const Matrix &a) {
     delete[] startingPos;
     delete[] rowHeads;
 
+    return result;
+}
+
+Matrix operator*(const Matrix& a, const Matrix& b) {
+    if (a.headNode->triple.col != b.headNode->triple.row) {
+        throw std::invalid_argument("Matrix dimensions do not match for multiplication");
+    }
+
+    Matrix result;
+    Triple headTriple = {a.headNode->triple.row, b.headNode->triple.col, 0};
+    result.headNode = new MatrixNode(FALSE, &headTriple);
+    int rows = a.headNode->triple.row;
+    int cols = b.headNode->triple.col;
+
+    // Create head nodes for rows in the result matrix
+    MatrixNodePtr* rowHeads = new MatrixNodePtr[rows];
+    for (int i = 0; i < rows; i++) {
+        rowHeads[i] = new MatrixNode(TRUE, nullptr);
+        rowHeads[i]->right = rowHeads[i];  // Initialize right pointer
+    }
+
+    MatrixNodePtr aRowHead = a.headNode->right;
+
+    while (aRowHead != a.headNode) {
+        MatrixNodePtr aPtr = aRowHead->right;
+        
+        while (aPtr != aRowHead) {
+            int aRow = aPtr->triple.row;
+            int aCol = aPtr->triple.col;
+            int aValue = aPtr->triple.value;
+
+            MatrixNodePtr bColHead = b.headNode->right;
+            while (bColHead != b.headNode) {
+                MatrixNodePtr bPtr = bColHead->right;
+                while (bPtr != bColHead) {
+                    if (bPtr->triple.row == aCol) {
+                        int bCol = bPtr->triple.col;
+                        int bValue = bPtr->triple.value;
+                        int productValue = aValue * bValue;
+
+                        // Find or create the corresponding element in the result matrix
+                        MatrixNodePtr resultPtr = rowHeads[aRow]->right;
+                        MatrixNodePtr prevPtr = rowHeads[aRow];
+                        while (resultPtr != rowHeads[aRow] && resultPtr->triple.col < bCol) {
+                            prevPtr = resultPtr;
+                            resultPtr = resultPtr->right;
+                        }
+
+                        if (resultPtr != rowHeads[aRow] && resultPtr->triple.col == bCol) {
+                            resultPtr->triple.value += productValue;
+                            if (resultPtr->triple.value == 0) {
+                                // Remove the node if the value becomes zero
+                                prevPtr->right = resultPtr->right;
+                                delete resultPtr;
+                                result.headNode->triple.value--;
+                            }
+                        } else if (productValue != 0) {
+                            // Create a new node for the product
+                            Triple newTriple = {aRow, bCol, productValue};
+                            MatrixNodePtr newNode = new MatrixNode(FALSE, &newTriple);
+                            newNode->right = resultPtr;
+                            prevPtr->right = newNode;
+                            result.headNode->triple.value++;
+                        }
+                    }
+                    bPtr = bPtr->right;
+                }
+                bColHead = bColHead->next;
+            }
+            aPtr = aPtr->right;
+        }
+        aRowHead = aRowHead->next;
+    }
+
+    // Link the row heads
+    for (int i = 0; i < rows - 1; i++) {
+        rowHeads[i]->next = rowHeads[i + 1];
+    }
+    rowHeads[rows - 1]->next = result.headNode;
+    result.headNode->right = rowHeads[0];
+
+    delete[] rowHeads;
     return result;
 }
