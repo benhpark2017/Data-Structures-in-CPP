@@ -48,7 +48,7 @@ int main() {
     std::cout << "The product of two matrices 1 and 2 is: " << std::endl;
     std::cout << product << std::endl;
     
-    //Testing the transpose function.
+    //Testing the transpose function (checked).
     transpose = SparseMatrix::Transpose(m1);
     std::cout << "The transpose of Matrix 1 is" << std::endl;
     std::cout << transpose << std::endl;
