@@ -5,9 +5,9 @@
  * The program maintains a generalized list to express a multivariate
  * polynomial using the following node structure.
  * 
- * |------------------------------------|
+ * |----------------|------------|------|
  * |tag = FALSE/TRUE| data/dlink | link |
- * |------------------------------------|
+ * |----------------|------------|------|
  */
 
 /*********************************main.cpp*************************************/
