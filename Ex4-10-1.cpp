@@ -192,24 +192,19 @@ int GenList::depth() const {
 }
 
 int GenList::depth(GenListNode* s) const {
-    if (!s) {
-        return 0;
-    }
+    if (!s) return 0;
 
     int maxDepth = 0;
-
-    if (s->tag == TRUE) {
-        // For TRUE tags (sublists), increment depth and recurse
-        int sublistDepth = depth(s->dlink);
-        maxDepth = 1 + sublistDepth;
+    GenListNode *p = s;
+    int m = 0;
+    while (p) {
+        if (p->tag) {
+            int n = depth(p->dlink);
+            if (m < n) m = n;
+        }
+        p = p->link;
     }
-
-    // Check the next node at the same level
-    int nextDepth = depth(s->link);
-    maxDepth = std::max(maxDepth, nextDepth);
-
-    // Always add 1 to the depth when encountering a dlink
-    return (s->tag == TRUE) ? maxDepth + 1 : maxDepth;
+    return m + 1;
 }
 
 
