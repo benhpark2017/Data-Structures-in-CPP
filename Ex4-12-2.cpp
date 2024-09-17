@@ -1,3 +1,10 @@
+/**
+ * Solutions to Chapter 4, Section 12, Exercise 2 of Horowitz's
+ * Fundamentals of Data Structures in C++.
+ * 
+ * Task: Using iterators, write C++ code for printing all elements in the
+ * heterogeneous list of Program 4.45.
+ */
 
 /***********************************main.cpp***************************************/
 #include "HeterogeneousList.h"
