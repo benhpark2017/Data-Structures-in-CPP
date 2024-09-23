@@ -1,10 +1,14 @@
 /**
- * Solutions to Chapter 5, Section 1, Exercise 1 of Horowitz's
+ * Solutions to Chapter 5, Section 1, Exercises 1 and 2 of Horowitz's
  * Fundamentals of Data Structures in C++.
  * 
  * Task 1: 
  * Write a function that reads in a tree represented as a list and creates its
  * internal representation using nodes with three fields: tag, data, and link.
+ *
+ * Task 2:
+ * Write a function that reverses the process in Task 1 and takes a pointer to
+ * a tree and prints out its list representation.
  */
 
 /**************************************main.cpp*******************************************/
@@ -12,16 +16,29 @@
 #include <iostream>
 
 int main() {
-    Tree tree;
+    Tree tree1, tree2;
     std::string input;
+    int choice;
 
-    std::cout << "Enter tree structure (e.g., A(B(E(K,L),F),C(G),D(H(M),I,J))):" << std::endl;
-    std::getline(std::cin, input);
+    std::cout << "Choose tree construction method:\n";
+    std::cout << "1. Enter tree structure as string\n";
+    std::cout << "2. Construct tree interactively\n";
+    std::cin >> choice;
+    std::cin.ignore();  // Ignore leftover newline after entering choice
 
-    tree.buildFromString(input);
-
-    std::cout << "\nTree structure:" << std::endl;
-    tree.printTree();
+    if (choice == 1) {
+        std::cout << "Enter tree structure (e.g., A(B(E(K,L),F),C(G),D(H(M),I,J))):" << std::endl;
+        std::getline(std::cin, input);
+        tree1.buildFromString(input);
+        std::cout << "\nTree 1 structure:" << std::endl;
+        tree1.printTree();
+    } else if (choice == 2) {
+        tree2.constructFromUserInput();
+        std::cout << "\nTree 2 structure:" << std::endl;
+        tree2.printTree();
+    } else {
+        std::cout << "Invalid choice." << std::endl;
+    }
 
     return 0;
 }
@@ -53,6 +70,7 @@ public:
     ~Tree();
 
     void buildFromString(const std::string& s); //Chapter 5, Section 1, Exercise 1
+    void constructFromUserInput();
     void printTree() const;
 };
 
@@ -64,6 +82,7 @@ public:
 #include "Tree.h"
 #include <iostream>
 #include <stack>
+#include <queue>
 #include <cctype>
 
 TreeNode::TreeNode(char d) : data(d), firstChild(nullptr), nextSibling(nullptr) {}
@@ -97,7 +116,6 @@ void Tree::printNode(TreeNode* node, std::string prefix, bool isLast) const {
     }
 }
 
-//Solutions to Chapter 5, Section 1, Exercise 1
 void Tree::buildFromString(const std::string& s) {
     std::stack<TreeNode*> stack;
     TreeNode* current = nullptr;
@@ -140,4 +158,44 @@ void Tree::printTree() const {
         return;
     }
     printNode(root);
+}
+
+void Tree::constructFromUserInput() {
+    std::cout << "Constructing a tree interactively.\n";
+    char data;
+    std::queue<TreeNode*> nodeQueue;
+    
+    std::cout << "Enter root node data: ";
+    std::cin >> data;
+    root = new TreeNode(data);  // Create the root node
+    nodeQueue.push(root);       // Add root node to queue
+
+    while (!nodeQueue.empty()) {
+        TreeNode* current = nodeQueue.front();
+        nodeQueue.pop();
+
+        char firstChild, nextSibling;
+        std::cout << "Enter first child of " << current->data << " (or '.' for no child): ";
+        std::cin >> firstChild;
+        if (firstChild != '.') {
+            TreeNode* childNode = new TreeNode(firstChild);
+            current->firstChild = childNode;
+            nodeQueue.push(childNode);
+        }
+
+        TreeNode* sibling = current->firstChild;
+        while (sibling) {
+            std::cout << "Enter next sibling of " << sibling->data << " (or '.' for no sibling): ";
+            std::cin >> nextSibling;
+            if (nextSibling == '.') break;
+
+            TreeNode* siblingNode = new TreeNode(nextSibling);
+            sibling->nextSibling = siblingNode;
+            nodeQueue.push(siblingNode);
+
+            sibling = siblingNode;  // Move to next sibling for further input
+        }
+    }
+
+    std::cout << "Tree construction complete.\n";
 }
