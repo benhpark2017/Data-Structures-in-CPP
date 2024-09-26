@@ -1,5 +1,5 @@
 /**
- * Solutions to Chapter 5, Section 3, Exercise 11 of Horowitz's
+ * Solutions to Chapter 5, Section 3, Exercises 11 to 13 of Horowitz's
  * Fundamentals of Data Structures in C++.
  * 
  * Task 11:
@@ -8,7 +8,26 @@
  * by running it on a variety of binary trees that cause every statement to
  * execute at least once.
  * 
- * Task 12: UNDER CONSTRUCTION.
+ * Task 12:
+ * Write a nonrecursive version of function postorder() function using only
+ * a fixed amount of additional space, using the ideas of the previous
+ * exercise.
+ * 
+ * Task 13:
+ * Do the preceding exercise for the case of preorder().
+ * 
+ * For complete binary tree:
+ * In-order should print H D I B E A F C G 
+ * Pre-order should print A B D H I E C F G
+ * Post-order should print H I D E B F G C A 
+ * Level-order should print A B C D E F G H I
+ * 
+ * For notation tree:
+ * In-order should print A / B * C * D + E
+ * Pre-order should print + * * / A B C D E
+ * Post-order should print A B / C * D * E +
+ * Level-order should print + * E * D / C A B
+ * 
  */
 
 /*********************************main.cpp*************************************/
@@ -60,44 +79,10 @@ int main() {
     // Set the root of the tree
     notationTree.setRoot(plus);
 
-
-    // Display in-order traversal to confirm tree structure
-    std::cout << "In-order traversal of the complete binary tree: ";
-    binaryTree.inorder();
-    std::cout << std::endl;
-
-    // Display nonrecursive in-order traversal to confirm tree structure
-    std::cout << "In-order non-recursive traversal of the complete binary tree: ";
-    binaryTree.inorderNonrec();
-    std::cout << std::endl;
     
     // Display in-order traversal without using stacks, threads, or parent field
     std::cout << "In-order traversal of the complete binary tree without stacks: ";
     binaryTree.NoStackInorder();
-    std::cout << std::endl;
-    
-    std::cout << std::endl;
-
-    // Display pre-order traversal to confirm tree structure
-    std::cout << "Pre-order traversal of the complete binary tree: ";
-    binaryTree.preorder();
-    std::cout << std::endl;
-    
-    // Display nonrecursive pre-order traversal to confirm tree structure
-    std::cout << "Pre-order non-recursive traversal of the complete binary tree: ";
-    binaryTree.preorderNonrec();
-    std::cout << std::endl;
-
-    std::cout << std::endl;
-
-    // Display post-order traversal to confirm tree structure
-    std::cout << "Post-order traversal of the complete binary tree: ";
-    binaryTree.postorder();
-    std::cout << std::endl;
-
-    // Display nonrecursive post-order traversal to confirm tree structure
-    std::cout << "Post-order non-recursive traversal of the complete binary tree: ";
-    binaryTree.postorderNonrec();
     std::cout << std::endl;
 
     //Testing implementation of postorder traversal without stacks
@@ -105,24 +90,6 @@ int main() {
     binaryTree.NoStackPostorder();
     std::cout << std::endl;
 
-
-    std::cout << std::endl;
-
-    // Display level order traversal to confirm tree structure
-    std::cout << "Level order traversal of the complete binary tree: ";
-    binaryTree.levelorder();
-    std::cout << std::endl;
-    
-    std::cout << std::endl;
-
-    // Display in-order traversal to confirm tree structure
-    std::cout << "In-order traversal of the notation tree: ";
-    notationTree.inorder();
-    std::cout << std::endl;
-
-    // Display in-order traversal to confirm tree structure
-    std::cout << "In-order non-recursive traversal of the notation tree: ";
-    notationTree.inorderNonrec();
     std::cout << std::endl;
 
     // Display in-order traversal to confirm tree structure
@@ -130,35 +97,9 @@ int main() {
     notationTree.NoStackInorder();
     std::cout << std::endl;
 
-    std::cout << std::endl;
-
-    // Display pre-order traversal to confirm tree structure
-    std::cout << "Pre-order traversal of the notation tree: ";
-    notationTree.preorder();
-    std::cout << std::endl;
-
-    // Display pre-order traversal to confirm tree structure
-    std::cout << "Pre-order non-recursive traversal of the notation tree: ";
-    notationTree.preorderNonrec();
-    std::cout << std::endl;
-
-    std::cout << std::endl;
-
-    // Display post-order traversal to confirm tree structure
-    std::cout << "Post-order traversal of the notation tree: ";
-    notationTree.postorder();
-    std::cout << std::endl;
-
-    // Display post-order traversal to confirm tree structure
-    std::cout << "Post-order non-recursive traversal of the notation tree: ";
-    notationTree.postorderNonrec();
-    std::cout << std::endl;
-
-    std::cout << std::endl;
-
-    // Display level order traversal to confirm tree structure
-    std::cout << "Level order traversal of the notation tree: ";
-    notationTree.levelorder();
+    //Testing implementation of postorder traversal without stacks
+    std::cout << "Post-order traversal of the notation tree without stacks: ";
+    notationTree.NoStackPostorder();
     std::cout << std::endl;
 
     std::cout << "\nEnd of program.\n";
@@ -189,24 +130,16 @@ public:
 // Tree Class Definition
 class Tree {
 public:
-    Tree();               // Constructor
+    Tree();                   // Constructor
     Tree(const Tree& other);  // Copy constructor
-    ~Tree();              // Destructor
+    ~Tree();                  // Destructor
 
     void insert(char data);   // Insert function to insert character data
-    
-    void inorder() const;     // Inorder traversal
-    void preorder() const;    // Preorder traversal
-    void postorder() const;   // Postorder traversal
-    void levelorder() const;  // Level order traversal
 
-    void inorderNonrec() const;     //Non-recursive pre-order traversal
-    void preorderNonrec() const;    //Non-recursive pre-order traversal
-    void postorderNonrec() const;   //Non-recursive post-order traversal
-
+    // Solution to Exercise 11
     void NoStackInorder();
     
-    //Testing...
+    // Solution to Exercise 12
     void NoStackPostorder();
 
     void setRoot(TreeNode* node);   // Set the root manually
@@ -218,9 +151,6 @@ private:
     // Helper functions
     void copyTree(TreeNode*& thisRoot, TreeNode* otherRoot);
     void deleteTree(TreeNode* node);
-    void inorder(TreeNode* node) const;
-    void preorder(TreeNode* node) const;
-    void postorder(TreeNode* node) const;
 };
 
 #endif //TREE_H
@@ -275,30 +205,6 @@ void Tree::insert(char data) {
     }
 }
 
-
-void Tree::inorder() const {
-    inorder(root);
-}
-
-void Tree::preorder() const {
-    preorder(root);
-}
-
-void Tree::postorder() const {
-    postorder(root);
-}
-
-void Tree::levelorder() const {
-    Queue<TreeNode*> q;
-    TreeNode *node = root;
-    while (node) {
-        std::cout << node->data << " ";
-        if (node->leftChild) q.enqueue(node->leftChild);
-        if (node->rightChild) q.enqueue(node->rightChild);
-        node = q.dequeue(node);
-    }
-}
-
 void Tree::setRoot(TreeNode* node) {
     root = node;
 }
@@ -318,104 +224,6 @@ void Tree::deleteTree(TreeNode* node) {
         deleteTree(node->leftChild);
         deleteTree(node->rightChild);
         delete node;
-    }
-}
-
-void Tree::inorder(TreeNode* node) const {
-    if (node != nullptr) {
-        inorder(node->leftChild);
-        std::cout << node->data << " ";
-        inorder(node->rightChild);
-    }
-}
-
-void Tree::preorder(TreeNode* node) const {
-    if (node != nullptr) {
-        std::cout << node->data << " ";
-        preorder(node->leftChild);
-        preorder(node->rightChild);
-    }
-}
-
-void Tree::postorder(TreeNode* node) const {
-    if (node != nullptr) {
-        postorder(node->leftChild);
-        postorder(node->rightChild);
-        std::cout << node->data << " ";
-    }
-}
-
-void Tree::inorderNonrec() const {
-    Stack<TreeNode*> s;
-    TreeNode* node = root;
-    while (true) {
-        while (node) {
-            s.push(node);
-            node = node->leftChild;
-        }
-        if (!s.isEmpty()) {
-            node = s.pop(node);
-            std::cout << node->data << " ";
-            node = node->rightChild;
-        }
-        else break;
-    }
-}
-
-void Tree::preorderNonrec() const {
-    if (root == nullptr) {
-        return; // If the tree is empty, just return
-    }
-
-    Stack<TreeNode*> s;  // Create a stack for TreeNode pointers
-    s.push(root);        // Push the root node onto the stack
-
-    while (!s.isEmpty()) {
-        TreeNode* node = nullptr; // Declare a variable to hold the popped node
-        s.pop(node);              // Pop the top node from the stack into 'node'
-        std::cout << node->data << " "; // Process the current node
-
-        // Push the right child first so that the left child is processed next
-        if (node->rightChild) {
-            s.push(node->rightChild);
-        }
-        if (node->leftChild) {
-            s.push(node->leftChild);
-        }
-    }
-}
-
-void Tree::postorderNonrec() const {
-    if (root == nullptr) {
-        return; // If the tree is empty, just return
-    }
-
-    Stack<TreeNode*> s;           // Stack to hold TreeNode pointers
-    TreeNode* current = root;     // Start from the root
-    TreeNode* lastVisited = nullptr; // Keep track of the last visited node
-    TreeNode* tempNode = nullptr; // Temporary variable for pop()
-
-    while (!s.isEmpty() || current != nullptr) {
-        // Reach the leftmost node
-        while (current != nullptr) {
-            s.push(current);       // Push current node onto the stack
-            current = current->leftChild; // Move to the left child
-        }
-
-        // Peek the node at the top of the stack without popping it
-        current = s.pop(tempNode); // Pop the top node into tempNode
-
-        // If the right child is null or has been visited, visit the current node
-        if (current->rightChild == nullptr || current->rightChild == lastVisited) {
-            std::cout << current->data << " "; // Process the current node
-            lastVisited = current; // Mark this node as last visited
-            current = nullptr; // Set current to nullptr to avoid revisiting
-        } else {
-            // If the right child exists, push the current node back onto the stack
-            // and process the right child next
-            s.push(current);
-            current = current->rightChild;
-        }
     }
 }
 
@@ -492,52 +300,72 @@ void Tree::NoStackInorder() {
 	} //end outer while (true)
 } // end of NoStackInorder()
 
-
+//Postorder traversal of binary tree using a fixed amount of additional storage
 void Tree::NoStackPostorder() {
-    if (root == nullptr) return; // If the tree is empty
-    TreeNode* current = root;
-    TreeNode* lastVisited = nullptr;
+    if (root == nullptr) return;
+
+    TreeNode dummy(0);  // Create a dummy node
+    dummy.leftChild = root;
+    TreeNode* current = &dummy;
+    TreeNode* prev = nullptr;
 
     while (current != nullptr) {
-        if (current->leftChild != nullptr && lastVisited != current->leftChild && lastVisited != current->rightChild) {
-            // Traverse left subtree
-            current = current->leftChild;
-        } 
-        else if (current->rightChild != nullptr && lastVisited != current->rightChild) {
-            // Traverse right subtree
+        if (current->leftChild == nullptr) {
             current = current->rightChild;
-        } 
-        else {
-            // Process current node
-            std::cout << current->data << " ";
-            lastVisited = current;
+        } else {
+            prev = current->leftChild;
+            while (prev->rightChild != nullptr && prev->rightChild != current) {
+                prev = prev->rightChild;
+            }
 
-            // Move up to parent
-            if (current == root) break;  // If we're back at the root, we're done
+            if (prev->rightChild == nullptr) {
+                prev->rightChild = current;
+                current = current->leftChild;
+            } else {
+                // Start of printReverse functionality
+                TreeNode* from = current->leftChild;
+                TreeNode* to = prev;
 
-            TreeNode* parent = root;
-            while (parent != nullptr) {
-                if (parent->leftChild == current || parent->rightChild == current) {
-                    current = parent;
-                    break;
+                // Start of reverseTree functionality
+                if (from != to) {
+                    TreeNode* x = from;
+                    TreeNode* y = from->rightChild;
+                    TreeNode* z;
+                    while (x != to) {
+                        z = y->rightChild;
+                        y->rightChild = x;
+                        x = y;
+                        y = z;
+                    }
                 }
-                else if (parent->leftChild != nullptr && lastVisited != parent->leftChild) {
-                    parent = parent->leftChild;
+                // End of reverseTree functionality
+
+                TreeNode* node = to;
+                while (true) {
+                    std::cout << node->data << " ";
+                    if (node == from) break;
+                    node = node->rightChild;
                 }
-                else if (parent->rightChild != nullptr && lastVisited != parent->rightChild) {
-                    parent = parent->rightChild;
+
+                // Start of reverseTree functionality (again)
+                if (from != to) {
+                    TreeNode* x = to;
+                    TreeNode* y = to->rightChild;
+                    TreeNode* z;
+                    while (x != from) {
+                        z = y->rightChild;
+                        y->rightChild = x;
+                        x = y;
+                        y = z;
+                    }
                 }
-                else {
-                    // This case should not happen, but let's handle it to avoid infinite loop
-                    current = nullptr;
-                    break;
-                }
+
+                prev->rightChild = nullptr;
+                current = current->rightChild;
             }
         }
     }
 }
-
-
 
 /*********************************Queue.h************************************/
 #ifndef QUEUE_H
@@ -593,7 +421,6 @@ Queue<T>::~Queue() {
     }
 }
 
-
 // Add an element to the queue (enqueue operation)
 template <typename T>
 void Queue<T>::enqueue(T node) {
@@ -624,7 +451,6 @@ T Queue<T>::dequeue(T& node) {  // Change to take T& instead of T
     delete temp;        // Delete the node
     return node;        // Return the data
 }
-
 
 // Return the front element
 template <typename T>
@@ -683,7 +509,6 @@ private:
 
 
 /********************************Stack.tpp***********************************/
-
 // Stack constructor
 template <typename T>
 Stack<T>::Stack() : topNode(nullptr) {}
