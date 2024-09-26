@@ -1,5 +1,5 @@
 /**
- * Solutions to Chapter 5, Section 3, Exercises 4 to 8 of Horowitz's
+ * Solutions to Chapter 5, Section 3, Exercise 9 of Horowitz's
  * Fundamentals of Data Structures in C++.
  * 
  * Task 9 [Programming Project]:
