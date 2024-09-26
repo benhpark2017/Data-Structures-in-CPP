@@ -16,13 +16,13 @@
  * Task 13:
  * Do the preceding exercise for the case of preorder().
  * 
- * For complete binary tree:
+ * Reference - For complete binary tree:
  * In-order should print H D I B E A F C G 
  * Pre-order should print A B D H I E C F G
  * Post-order should print H I D E B F G C A 
  * Level-order should print A B C D E F G H I
  * 
- * For notation tree:
+ * Reference - For notation tree:
  * In-order should print A / B * C * D + E
  * Pre-order should print + * * / A B C D E
  * Post-order should print A B / C * D * E +
@@ -84,7 +84,12 @@ int main() {
     std::cout << "In-order traversal of the complete binary tree without stacks: ";
     binaryTree.NoStackInorder();
     std::cout << std::endl;
-
+    
+    //Testing implementation of postorder traversal without stacks
+    std::cout << "Pre-order traversal of the complete binary tree without stacks: ";
+    binaryTree.NoStackPreorder();
+    std::cout << std::endl;
+    
     //Testing implementation of postorder traversal without stacks
     std::cout << "Post-order traversal of the complete binary tree without stacks: ";
     binaryTree.NoStackPostorder();
@@ -97,6 +102,11 @@ int main() {
     notationTree.NoStackInorder();
     std::cout << std::endl;
 
+    //Testing implementation of postorder traversal without stacks
+    std::cout << "Pre-order traversal of the notation tree without stacks: ";
+    notationTree.NoStackPreorder();
+    std::cout << std::endl;
+    
     //Testing implementation of postorder traversal without stacks
     std::cout << "Post-order traversal of the notation tree without stacks: ";
     notationTree.NoStackPostorder();
@@ -141,6 +151,9 @@ public:
     
     // Solution to Exercise 12
     void NoStackPostorder();
+
+    // Solution to Exercise 13
+    void NoStackPreorder();
 
     void setRoot(TreeNode* node);   // Set the root manually
     TreeNode* getRoot() { return root; }
@@ -322,11 +335,9 @@ void Tree::NoStackPostorder() {
                 prev->rightChild = current;
                 current = current->leftChild;
             } else {
-                // Start of printReverse functionality
                 TreeNode* from = current->leftChild;
                 TreeNode* to = prev;
 
-                // Start of reverseTree functionality
                 if (from != to) {
                     TreeNode* x = from;
                     TreeNode* y = from->rightChild;
@@ -338,7 +349,6 @@ void Tree::NoStackPostorder() {
                         y = z;
                     }
                 }
-                // End of reverseTree functionality
 
                 TreeNode* node = to;
                 while (true) {
@@ -347,7 +357,6 @@ void Tree::NoStackPostorder() {
                     node = node->rightChild;
                 }
 
-                // Start of reverseTree functionality (again)
                 if (from != to) {
                     TreeNode* x = to;
                     TreeNode* y = to->rightChild;
@@ -366,6 +375,46 @@ void Tree::NoStackPostorder() {
         }
     }
 }
+
+
+// Preorder traversal of binary tree using a fixed amount of additional storage
+void Tree::NoStackPreorder() {
+    if (root == nullptr) return;
+
+    TreeNode dummy(0);  // Create a dummy node
+    dummy.leftChild = root;
+    TreeNode* current = &dummy;
+
+    while (current != nullptr) {
+        if (current->leftChild == nullptr) {
+            // If no left child, visit this node and move to the right
+            std::cout << current->data << " ";  // Print the node
+            current = current->rightChild;
+        } else {
+            // Find the predecessor (rightmost node in the left subtree)
+            TreeNode* predecessor = current->leftChild;
+            while (predecessor->rightChild != nullptr && predecessor->rightChild != current) {
+                predecessor = predecessor->rightChild;
+            }
+
+            if (predecessor->rightChild == nullptr) {
+                // Establish a link from predecessor's rightChild to current
+                predecessor->rightChild = current;
+
+                // Visit the current node (preorder action)
+                std::cout << current->data << " ";  // Print the node
+                current = current->leftChild;
+            } else {
+                // Predecessor found again, meaning left subtree is fully visited
+                predecessor->rightChild = nullptr;  // Remove the link
+
+                // Move to the right child after completing left subtree
+                current = current->rightChild;
+            }
+        }
+    }
+}
+
 
 /*********************************Queue.h************************************/
 #ifndef QUEUE_H
@@ -421,6 +470,7 @@ Queue<T>::~Queue() {
     }
 }
 
+
 // Add an element to the queue (enqueue operation)
 template <typename T>
 void Queue<T>::enqueue(T node) {
@@ -451,6 +501,7 @@ T Queue<T>::dequeue(T& node) {  // Change to take T& instead of T
     delete temp;        // Delete the node
     return node;        // Return the data
 }
+
 
 // Return the front element
 template <typename T>
