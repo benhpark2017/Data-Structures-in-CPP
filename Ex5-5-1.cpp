@@ -29,6 +29,7 @@
  * 
  */
 
+/**************************************main.cpp******************************************/
 #include "ThreadedTree.h"
 #include <iostream>
 
@@ -36,16 +37,36 @@ int main() {
     ThreadedTree tree;
     tree.Initialize();
     
-    // Inorder traversal
+    // In-order traversal of threaded binary tree using an iterator
     ThreadedInorderIterator inorderIterator(tree);
-    std::cout << "In-order traversal of the threaded binary tree." << std::endl;
+    std::cout << "In-order traversal of threaded binary tree using an iterator."
+              << std::endl;
     inorderIterator.Inorder();
+    std::cout << std::endl;
+    
+    // In-order traversal using a set of driver and workhorse functions
+    std::cout << "In-order traversal of the threaded binary tree." << std::endl;
+    tree.Inorder();
     std::cout << '\n' << std::endl;
+    
+    // Post-order traversal of threaded binary tree using an iterator
+    ThreadedPostorderIterator postorderIterator(tree);
+    std::cout << "Post-order traversal of threaded binary tree using an iterator:"
+              << std::endl;
+    postorderIterator.Postorder();
+    std::cout << std::endl;
 
     // Postorder traversal using a set of driver and workhorse functions
     std::cout << "Post-order traversal of the threaded binary tree." << std::endl;
     tree.Postorder();
     std::cout << '\n' << std::endl;
+    
+    // Pre-order traversal of threaded binary tree using an iterator
+    ThreadedPreorderIterator preorderIterator(tree);
+    std::cout << "Pre-order traversal of threaded binary tree using an iterator:"
+              << std::endl;
+    preorderIterator.Preorder();
+    std::cout << std::endl;
     
     // Preorder traversal using a set of driver and workhorse functions
     std::cout << "Pre-order traversal of the threaded binary tree." << std::endl;
@@ -58,6 +79,7 @@ int main() {
 
 
 
+/***********************************ThreadedTree.h***************************************/
 #ifndef THREADED_TREE_H
 #define THREADED_TREE_H
 
@@ -67,6 +89,7 @@ class ThreadedNode {
     friend class ThreadedTree;
     friend class ThreadedInorderIterator;
     friend class ThreadedPostorderIterator;
+    friend class ThreadedPreorderIterator;
     
   private:
     Boolean LeftThread;
@@ -85,19 +108,24 @@ class ThreadedNode {
 class ThreadedTree {
     friend class ThreadedInorderIterator;
     friend class ThreadedPostorderIterator;
+    friend class ThreadedPreorderIterator;
     
   public:
     ThreadedTree();
     void Initialize();
     
+    void Inorder();
     void Postorder();
     void Preorder();
+    
     void InsertRight(ThreadedNode* s, ThreadedNode* r);
     void InsertLeft(ThreadedNode* s, ThreadedNode* l);
     ThreadedNode* InorderSucc(ThreadedNode* r);
     
   private:
     ThreadedNode* root;
+    
+    void Inorder(ThreadedNode* node);
     void Postorder(ThreadedNode* node);
     void Preorder(ThreadedNode* node);
 };
@@ -112,12 +140,34 @@ class ThreadedInorderIterator {
     ThreadedNode* CurrentNode;
 };
 
+class ThreadedPostorderIterator {
+  public:
+    char* Next();
+    void Postorder();
+    ThreadedPostorderIterator(ThreadedTree& tree) : t(tree), CurrentNode(nullptr) {}
+  private:
+    ThreadedTree& t;
+    ThreadedNode* CurrentNode;
+};
+
+class ThreadedPreorderIterator {
+  public:
+    char* Next();
+    void Preorder();
+    ThreadedPreorderIterator(ThreadedTree& tree) : t(tree), CurrentNode(nullptr) {}
+  private:
+    ThreadedTree& t;
+    ThreadedNode* CurrentNode;
+};
+
 #endif //THREADED_TREE_H
 
 
 
+/**********************************ThreadedTree.cpp**************************************/
 #include "ThreadedTree.h"
 #include <iostream>
+#include <stack>
 
 //Find the in-order successor of CurrentNode in a threaded binary tree
 char* ThreadedInorderIterator::Next() {
@@ -129,9 +179,138 @@ char* ThreadedInorderIterator::Next() {
     else return &CurrentNode->data;
 }
 
+// Driver function to print the nodes
 void ThreadedInorderIterator::Inorder() {
     for (char* ch = Next(); ch; ch = Next())
         std::cout << *ch << " ";
+}
+
+//Find the post-order successor of CurrentNode in a threaded binary tree
+char* ThreadedPostorderIterator::Next() {
+    if (CurrentNode == t.root) {
+        return nullptr; // Traversal completed
+    }
+
+    ThreadedNode* p = CurrentNode;
+
+    // First call: move to the leftmost node
+    if (p == nullptr) {
+        p = t.root->LeftChild;
+        while (!p->LeftThread || !p->RightThread) {
+            if (!p->LeftThread) {
+                p = p->LeftChild;  // Move to the leftmost node
+            } else {
+                p = p->RightChild;
+            }
+        }
+        CurrentNode = p;
+        return &p->data;
+    }
+
+    // Find the parent node
+    ThreadedNode* parent = nullptr;
+    std::stack<ThreadedNode*> s;
+    s.push(t.root);
+    while (!s.empty()) {
+        ThreadedNode* q = s.top();
+        s.pop();
+
+        if (q->LeftChild == p || q->RightChild == p) {
+            parent = q;
+            break;
+        }
+
+        if (!q->RightThread) {
+            s.push(q->RightChild);
+        }
+        if (!q->LeftThread) {
+            s.push(q->LeftChild);
+        }
+    }
+
+    if (parent) {
+        // If p is the right child or the right subtree is already visited
+        if (parent->RightChild == p || parent->RightThread || parent->RightChild == CurrentNode) {
+            p = parent;
+        } else {
+            // Move to the right subtree
+            p = parent->RightChild;
+            while (!p->LeftThread || !p->RightThread) {
+                if (!p->LeftThread) {
+                    p = p->LeftChild;
+                } else {
+                    p = p->RightChild;
+                }
+            }
+        }
+        CurrentNode = p;
+
+        // Check if we've reached the root node after visiting 'A'
+        if (CurrentNode == t.root->LeftChild) { // 'A' node is visited
+            CurrentNode = t.root; // Set to root to mark end of traversal
+        }
+
+        return &p->data;
+    } else {
+        CurrentNode = t.root;
+        return nullptr; // Traversal completed
+    }
+}
+
+// Driver function to print the nodes
+void ThreadedPostorderIterator::Postorder() {
+    for (char* ch = Next(); ch; ch = Next()) {
+        std::cout << *ch << " ";  // Print data (skip the root/dummy node)
+    }
+}
+
+char* ThreadedPreorderIterator::Next() {
+    // If traversal has finished (i.e., CurrentNode is set to the dummy root), return nullptr
+    if (CurrentNode == t.root) {
+        return nullptr;
+    }
+
+    // First call: Start from the root of the actual tree
+    if (CurrentNode == nullptr) {
+        CurrentNode = t.root->LeftChild;  // Start at the actual root (first node of the tree)
+        return &CurrentNode->data;
+    }
+
+    // Get current node reference
+    ThreadedNode* p = CurrentNode;
+
+    // Move to the left child if it exists (and is not a thread)
+    if (!p->LeftThread) {
+        CurrentNode = p->LeftChild;
+    }
+    // Otherwise, if there is a right child, move to it
+    else if (!p->RightThread) {
+        CurrentNode = p->RightChild;
+    }
+    // If both are threads, follow the threads to the next node in preorder
+    else {
+        // Continue moving to the right until we find a node without a thread
+        while (p->RightThread && p->RightChild != t.root) {
+            p = p->RightChild;
+        }
+        CurrentNode = p->RightChild;
+
+        // If we reach the dummy root, traversal is done
+        if (CurrentNode == t.root) {
+            return nullptr;
+        }
+    }
+
+    // Return the data of the current node
+    return &CurrentNode->data;
+}
+
+
+// Driver function to print the nodes
+void ThreadedPreorderIterator::Preorder() {
+    for (char* ch = Next(); ch; ch = Next()) {
+        std::cout << *ch << " ";  // Print data (skip the root/dummy node)
+    }
 }
 
 ThreadedTree::ThreadedTree() {
@@ -142,6 +321,17 @@ ThreadedTree::ThreadedTree() {
     
 }
 
+
+//Initialize a complete threaded binary tree consisting of nine nodes
+/**The tree should look like this:
+                  A
+                /  \
+               B    C
+              / \  / \
+             D  E F  G
+            / \
+           H  I
+*/
 void ThreadedTree::Initialize() { 
     // Declare node pointers
     ThreadedNode *A, *B, *C, *D, *E, *F, *G, *H, *I;
@@ -263,5 +453,36 @@ void ThreadedTree::Preorder(ThreadedNode* node) {
 
     if (!node->RightThread) {
         Preorder(node->RightChild);  // Traverse the right subtree if it's not threaded
+    }
+}
+
+void ThreadedTree::Inorder() {
+    if (root->LeftChild != nullptr) {
+        Inorder(root->LeftChild);  // Call the workhorse function with the root's left child (actual root)
+    }
+}
+
+
+void ThreadedTree::Inorder(ThreadedNode* node) {
+    // Find the leftmost node (the first node in in-order sequence)
+    while (!node->LeftThread) {
+        node = node->LeftChild;
+    }
+
+    // Traverse the tree in in-order
+    while (node != root) {
+        // Print the data of the current node
+        std::cout << node->data << " ";
+
+        // If the current node has a right thread, follow it to the next node in in-order sequence
+        if (node->RightThread) {
+            node = node->RightChild;
+        } else {
+            // Otherwise, move to the leftmost node in the right subtree
+            node = node->RightChild;
+            while (!node->LeftThread) {
+                node = node->LeftChild;
+            }
+        }
     }
 }
