@@ -7,16 +7,19 @@
  * threads as in the text. Which of the traversals can be done without the use
  * of a stack? For those that can be performed without a stack, write a C++
  * function and analyze its space complexity.
+ *  
+ * In-order and pre-order traversals can be done without using a stack.
+ * Post-order traversal, however, requires the use of a stack.
  * 
  * Response:
- * In-order iterator:   Time complexity is O(h), where h is height of the tree;
- *                      Space complexity is O(1).
- * Pre-order iterator:  Time complexity is O(n) in the worst case, where n is
- *                      the number of nodes.
- *                      Space complexity is O(1)
- * Post-order iterator: Time complexity is O(n) in the worst case, where n is
- *                      the number of nodes.
- *                      Space complexity is also O(n).
+ * Inorder() function:   Time complexity is O(h), where h is height of the tree;
+ *                       Space complexity is O(1).
+ * Preorder() function:  Time complexity is O(n) in the worst case, where n is
+ *                       the number of nodes.
+ *                       Space complexity is O(1).
+ * Postorder() function: Time complexity is O(n) in the worst case, where n is
+ *                       the number of nodes.
+ *                       Space complexity is also O(n).
  */
 
 /*******************************main.cpp***********************************/
