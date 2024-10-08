@@ -64,23 +64,15 @@ int main() {
 }
 
 
-/********************************Element.h************************************/
-#ifndef ELEMENT_H
-#define ELEMENT_H
-
-template <typename KeyType>
-struct Element {
-    KeyType key;
-};
-
-#endif // ELEMENT_H
-
 
 /*********************************MinPQ.h*************************************/
 #ifndef MIN_PQ_H
 #define MIN_PQ_H
 
-#include "Element.h"
+template <typename KeyType>
+struct Element {
+    KeyType key;
+};
 
 template <typename KeyType>
 class MinPQ {
@@ -91,6 +83,7 @@ public:
 };
 
 #endif // MIN_PQ_H
+
 
 
 /********************************MinHeap.h************************************/
