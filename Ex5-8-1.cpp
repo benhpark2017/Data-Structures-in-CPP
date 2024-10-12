@@ -1,141 +1,244 @@
-/***********This code is currently under construction! I will make updates soon.************/
+/*********************************main.cpp*************************************/
+#include "WinnerTree.h"
+#include "LoserTree.h"
+#include <iostream>
+
+int main() {
+    std::cout << "Instantiating Winner and Loser Trees...\n";
+    WinnerTree winnerTree(8);
+    LoserTree loserTree(8);
+    
+    std::vector<std::vector<int>> testData = {
+        {10, 15, 16}, {9, 20, 38}, {20, 20, 30}, {6, 25, 28},
+        {8, 15, 50}, {9, 11, 16}, {90, 95, 99}, {17, 18, 20}
+    };
+    
+    winnerTree.Initialize(testData);
+    loserTree.Initialize(testData);
+
+    std::cout << "\nRunning Winner Tree tournaments:\n";
+    winnerTree.runTournaments(testData);
+    
+    std::cout << "\nRunning Loser Tree tournaments:\n";
+    loserTree.runTournaments(testData);
+    
+    winnerTree.addToRun(testData, 4, 15);
+
+    std::cout << "\nRunning New Winner Tree Tournaments.\n";
+    winnerTree.runTournaments(testData);
+
+    std::cout << "\nRunning the tournament with a merged data set:\n";
+    std::vector<std::vector<int>> mergedData = winnerTree.mergeRuns(testData);
+    
+    if (!mergedData.empty()) {
+        std::cout << "Merged and remaining runs:\n";
+        for (const auto& run : mergedData) {
+            std::cout << "{ ";
+            for (int val : run) {
+                std::cout << val << " ";
+            }
+            std::cout << "}\n";
+        }
+    } else {
+        std::cout << "No valid runs were merged.\n";
+    }
+    
+    std::cout << "End of program.\n";
+    return 0;
+}
+
+
+
+/******************************SelectionTree.h*********************************/
+
+#ifndef SELECTION_TREE_H
+#define SELECTION_TREE_H
 
 #include <vector>
 #include <queue>
 #include <cmath>
 #include <limits>
 #include <stdexcept>
-#include <algorithm>
-#include <iostream>
 
 class Element {
-  public:
+public:
     int key;
     int record;
 
-    Element(int k = 0, int r = 0) : key(k), record(r) {}
-
-    bool operator<(const Element& other) const {
-        return key < other.key;
-    }
-
-    bool operator>(const Element& other) const {
-        return key > other.key;
-    }
+    Element(int k = 0, int r = 0);
+    bool operator<(const Element& other) const;
+    bool operator>(const Element& other) const;
 };
 
-class WinnerTree {
-  private:
+class SelectionTree {
+protected:
     std::vector<Element> tree;
     std::vector<std::queue<int>> runs;
     int height;
 
-    // Function to build the winner tree for a single tournament (column)
-    void buildTreeForTournament(const std::vector<int>& contestants) {
-        int k = contestants.size();
+    static constexpr int SENTINEL_VALUE = std::numeric_limits<int>::max();
 
-        // Find the next power of 2 greater than or equal to k
-        int powerOfTwo = 1 << static_cast<int>(std::ceil(std::log2(k)));
+    virtual ~SelectionTree() = default;
 
-        // Add padding with dummy nodes if k is not a power of 2
-        std::vector<Element> paddedContestants;
-        for (int i = 0; i < k; ++i) {
-            paddedContestants.emplace_back(contestants[i], i + powerOfTwo);  // Add contestants with record
-        }
-        if (k < powerOfTwo) {
-            for (int i = 0; i < powerOfTwo - k; ++i) {
-                paddedContestants.emplace_back(std::numeric_limits<int>::max(), -1);  // Sentinel value
-            }
-        }
+public:
+    explicit SelectionTree(int numRuns);
+    virtual void runTournaments(const std::vector<std::vector<int>>& data) = 0;
+};
 
-        // Create the tree structure to hold internal nodes and contestants
-        int numInternalNodes = powerOfTwo - 1;
-        tree.resize(2 * powerOfTwo - 1);
+#endif // SELECTION_TREE_H
 
-        // Copy contestants to the bottom level of the tree
-        int leafStart = numInternalNodes;
-        for (int i = 0; i < paddedContestants.size(); ++i) {
-            tree[leafStart + i] = paddedContestants[i];
-        }
 
-        // Now, build the internal nodes (winners) by comparing children
-        for (int i = leafStart - 1; i >= 0; --i) {
-            int leftChild = 2 * i + 1;
-            int rightChild = 2 * i + 2;
 
-            if (tree[leftChild].key == std::numeric_limits<int>::max()) {
-                tree[i] = tree[rightChild];  // If left child is a sentinel, take right child
-                tree[i].record /= 2;
-            } else if (tree[rightChild].key == std::numeric_limits<int>::max()) {
-                tree[i] = tree[leftChild];   // If right child is a sentinel, take left child
-                tree[i].record /= 2; 
-            } else {
-                if (tree[leftChild] < tree[rightChild]) {
-                    tree[i] = tree[leftChild];
-                    tree[i].record /= 2;
-                } else {
-                    tree[i] = tree[rightChild];
-                    tree[i].record /= 2;
-                }
-            }
-        }
+/*****************************SelectionTree.cpp********************************/
 
-        // Output the winner of this tournament
-        std::cout << "Winner: Key = " << tree[0].key << ", Record = " << tree[0].record << std::endl;
-        std::cout << "Finalist Key = " << tree[1].key << ", Record = " << tree[1].record << std::endl;
-        std::cout << "Finalist Key = " << tree[2].key << ", Record = " << tree[2].record << std::endl;
-        std::cout << "Semifinalist Key = " << tree[3].key << ", Record = " << tree[3].record << std::endl;
-        std::cout << "Semifinalist Key = " << tree[4].key << ", Record = " << tree[4].record << std::endl;
-        std::cout << "Semifinalist Key = " << tree[5].key << ", Record = " << tree[5].record << std::endl;
-        std::cout << "Semifinalist Key = " << tree[6].key << ", Record = " << tree[6].record << std::endl;
-        std::cout << std::endl; 
+#include "SelectionTree.h"
+
+Element::Element(int k, int r) : key(k), record(r) {}
+
+bool Element::operator<(const Element& other) const {
+    return key < other.key;
+}
+
+bool Element::operator>(const Element& other) const {
+    return key > other.key;
+}
+
+SelectionTree::SelectionTree(int numRuns) {
+    if (numRuns <= 0) throw std::invalid_argument("Number of runs must be positive");
+
+    height = static_cast<int>(std::ceil(std::log2(numRuns)));
+    int treeSize = (1 << (height + 1)) - 1;
+
+    tree.resize(treeSize);
+    runs.resize(numRuns);
+}
+
+
+
+/********************************WinnerTree.h**********************************/
+
+#ifndef WINNER_TREE_H
+#define WINNER_TREE_H
+
+#include "SelectionTree.h"
+#include <algorithm>
+
+class WinnerTree : public SelectionTree {
+private:
+    void buildTreeForTournament(const std::vector<int>& contestants);
+
+public:
+    explicit WinnerTree(int numRuns);
+    void Initialize(const std::vector<std::vector<int>>& data);
+    void addToRun(std::vector<std::vector<int>>& data, int runIndex, int value);
+    void runTournaments(const std::vector<std::vector<int>>& data) override;
+    std::vector<std::vector<int>> mergeRuns(const std::vector<std::vector<int>>& runs);
+};
+
+#endif // WINNER_TREE_H
+
+
+
+/*******************************WinnerTree.cpp*********************************/
+
+#include "WinnerTree.h"
+#include <iostream>
+
+WinnerTree::WinnerTree(int numRuns) : SelectionTree(numRuns) {}
+
+void WinnerTree::Initialize(const std::vector<std::vector<int>>& data) {
+    int numRuns = data.size();
+    height = static_cast<int>(std::ceil(std::log2(numRuns)));
+    int treeSize = (1 << (height + 1)) - 1;
+
+    tree.resize(treeSize);
+
+    std::cout << "Winner Tree initialized with " << treeSize << " nodes.\n";
+}
+
+void WinnerTree::addToRun(std::vector<std::vector<int>>& data, int runIndex, int value) {
+    if (runIndex < 1 || runIndex > data.size()) {
+        throw std::out_of_range("Run index must be between 1 and " + std::to_string(data.size()));
     }
+    data[runIndex - 1][0] = value;
+}
 
-  public:
-    int numLeaves;
-  
-    WinnerTree(int numRuns) {
-        if (numRuns <= 0) throw std::invalid_argument("Number of runs must be positive");
-
-        numLeaves = numRuns;
-        height = static_cast<int>(std::ceil(std::log2(numRuns)));
-        int treeSize = (1 << (height + 1)) - 1;  // Full binary tree size
-
-        tree.resize(treeSize);
-        runs.resize(numRuns);
-    }
-
-    std::vector<std::vector<int>>* addToRun(std::vector<std::vector<int>>& data, int runIndex, int value) {
-        // Ensure that runIndex is within the bounds of the dataset
-        if (runIndex < 1 || runIndex > data.size()) {
-            throw std::out_of_range("Run index must be between 1 and " + std::to_string(data.size()));
-        }
-
-        // Replace the first value in the specified run with the new value
-        data[runIndex - 1][0] = value;
-
-        // Return a pointer to the modified dataset
-        return &data;
-    }
-
-    // Function to run multiple tournaments based on the 2D input data
-    void runTournaments(const std::vector<std::vector<int>>& data) {
-        int numTournaments = data[0].size();  // Number of tournaments (columns)
-        int numRuns = data.size();            // Number of runs (rows)
-        
-        for (int t = 0; t < numTournaments; ++t) {
-            // Collect the contestants for the current tournament
-            std::vector<int> contestants;
-            for (int r = 0; r < numRuns; ++r) {
-                contestants.push_back(data[r][t]);
-            }
-
-            // Build the tree and get the winner for this tournament
-            buildTreeForTournament(contestants);
-        }
-    }
+void WinnerTree::runTournaments(const std::vector<std::vector<int>>& data) {
+    Initialize(data);
     
-std::vector<std::vector<int>> mergeRuns(const std::vector<std::vector<int>>& runs) {
+    int numTournaments = data[0].size();
+    int numRuns = data.size();
+    
+    for (int t = 0; t < numTournaments; ++t) {
+        std::vector<int> contestants;
+        for (int r = 0; r < numRuns; ++r) {
+            contestants.push_back(data[r][t]);
+        }
+        buildTreeForTournament(contestants);
+    }
+}
+
+void WinnerTree::buildTreeForTournament(const std::vector<int>& contestants) {
+    int k = contestants.size();
+
+    // Find the next power of 2 greater than or equal to k
+    int powerOfTwo = 1 << static_cast<int>(std::ceil(std::log2(k)));
+
+    // Add padding with dummy nodes if k is not a power of 2
+    std::vector<Element> paddedContestants;
+    for (int i = 0; i < k; ++i) {
+        paddedContestants.emplace_back(contestants[i], i + powerOfTwo);  // Add contestants with record
+    }
+    if (k < powerOfTwo) {
+        for (int i = 0; i < powerOfTwo - k; ++i) {
+            paddedContestants.emplace_back(std::numeric_limits<int>::max(), -1);  // Sentinel value
+        }
+    }
+
+    // Create the tree structure to hold internal nodes and contestants
+    int numInternalNodes = powerOfTwo - 1;
+    tree.resize(2 * powerOfTwo - 1);
+
+    // Copy contestants to the bottom level of the tree
+    int leafStart = numInternalNodes;
+    for (int i = 0; i < paddedContestants.size(); ++i) {
+        tree[leafStart + i] = paddedContestants[i];
+    }
+
+    // Now, build the internal nodes (winners) by comparing children
+    for (int i = leafStart - 1; i >= 0; --i) {
+        int leftChild = 2 * i + 1;
+        int rightChild = 2 * i + 2;
+
+        if (tree[leftChild].key == std::numeric_limits<int>::max()) {
+            tree[i] = tree[rightChild];  // If left child is a sentinel, take right child
+            tree[i].record /= 2;
+        } else if (tree[rightChild].key == std::numeric_limits<int>::max()) {
+            tree[i] = tree[leftChild];   // If right child is a sentinel, take left child
+            tree[i].record /= 2; 
+        } else {
+            if (tree[leftChild] < tree[rightChild]) {
+                tree[i] = tree[leftChild];
+                tree[i].record /= 2;
+            } else {
+                tree[i] = tree[rightChild];
+                tree[i].record /= 2;
+            }
+        }
+    }
+
+    // Output the winner of this tournament
+    std::cout << "Winner: Key = " << tree[0].key << ", Record = " << tree[0].record << std::endl;
+    std::cout << "Finalist Key = " << tree[1].key << ", Record = " << tree[1].record << std::endl;
+    std::cout << "Finalist Key = " << tree[2].key << ", Record = " << tree[2].record << std::endl;
+    std::cout << "Semifinalist Key = " << tree[3].key << ", Record = " << tree[3].record << std::endl;
+    std::cout << "Semifinalist Key = " << tree[4].key << ", Record = " << tree[4].record << std::endl;
+    std::cout << "Semifinalist Key = " << tree[5].key << ", Record = " << tree[5].record << std::endl;
+    std::cout << "Semifinalist Key = " << tree[6].key << ", Record = " << tree[6].record << std::endl;
+    std::cout << std::endl; 
+}
+
+std::vector<std::vector<int>> WinnerTree::mergeRuns(const std::vector<std::vector<int>>& runs) {
     int numRuns = runs.size();
     if (numRuns < 2) {
         std::cout << "At least two runs are needed for merging.\n";
@@ -211,166 +314,131 @@ std::vector<std::vector<int>> mergeRuns(const std::vector<std::vector<int>>& run
     return result;  // Return the merged run and remaining unselected runs
 }
 
-    
-}; // end of class WinnerTree
 
 
-class LoserTree {
-  private:
-    std::vector<Element> tree;
-    std::vector<std::queue<int>> runs;
-    int height;
+/*********************************LoserTree.h**********************************/
 
-    void buildTreeForTournament(const std::vector<int>& contestants) {
-        int k = contestants.size();
+#ifndef LOSER_TREE_H
+#define LOSER_TREE_H
 
-        // Find the next power of 2 greater than or equal to k
-        int powerOfTwo = 1 << static_cast<int>(std::ceil(std::log2(k)));
+#include "SelectionTree.h"
 
-        // Create the tree structure to hold internal nodes and contestants
-        int numInternalNodes = powerOfTwo - 1;
-        tree.resize(2 * powerOfTwo - 1);  // This is the Loser Tree (final output)
+class LoserTree : public SelectionTree {
+private:
+    void buildTreeForTournament(const std::vector<int>& contestants);
 
-        // Step 1: Build the Winner Tree first
-        std::vector<Element> winnerTree(2 * powerOfTwo - 1);
-    
-        // Copy contestants to the bottom level of the winner tree
-        int leafStart = numInternalNodes;
-        for (int i = 0; i < k; ++i) {
-            winnerTree[leafStart + i] = Element(contestants[i], i + powerOfTwo);  // Assign contestants
-        }
-        for (int i = k; i < powerOfTwo; ++i) {
-            winnerTree[leafStart + i] = Element(std::numeric_limits<int>::max(), -1);  // Sentinel
-        }
-
-        // Step 2: Build the Winner Tree (to get winners for the matchups)
-        for (int i = leafStart - 1; i >= 0; --i) {
-            int leftChild = 2 * i + 1;
-            int rightChild = 2 * i + 2;
-
-            // Compare keys to determine the winner for each match
-            if (winnerTree[leftChild].key <= winnerTree[rightChild].key) {
-                winnerTree[i] = winnerTree[leftChild];  // Winner moves up the tree
-                winnerTree[i].record /= 2;
-            } else {
-                winnerTree[i] = winnerTree[rightChild]; // Winner moves up the tree
-                winnerTree[i].record /= 2;
-            }
-        }
-
-        // Step 3: Populate the Loser Tree by storing the loser of each match
-        for (int i = leafStart - 1; i >= 0; --i) {
-            int leftChild = 2 * i + 1;
-            int rightChild = 2 * i + 2;
-
-            // Fetch the losers from the winnerTree
-            if (winnerTree[leftChild].key <= winnerTree[rightChild].key) {
-                tree[i] = winnerTree[rightChild];  // Loser goes into the Loser Tree
-                tree[i].record /= 2;
-            } else {
-                tree[i] = winnerTree[leftChild];   // Loser goes into the Loser Tree
-                tree[i].record /= 2;
-            }
-        }
-
-        // Step 4: Output the overall winner from the Winner Tree
-        Element winner = winnerTree[0];
-        winner.record = 0;
-
-        // Output results for both trees
-        std::cout << "Overall Winner: Key = " << winner.key << ", Record = " << winner.record << std::endl;
-    
-        // Output Loser Tree
-        for (int i = 0; i < numInternalNodes; ++i) {
-            std::cout << "Loser Tree Node " << i << ": Key = " << tree[i].key << ", Record = " << tree[i].record << std::endl;
-        }
-        std::cout << std::endl;
-    }
-
-  public:
-    int numLeaves;
-
-    LoserTree(int numRuns) {
-        if (numRuns <= 0) throw std::invalid_argument("Number of runs must be positive");
-
-        numLeaves = numRuns;
-        height = static_cast<int>(std::ceil(std::log2(numRuns)));
-        int treeSize = (1 << (height + 1)) - 1;  // Full binary tree size
-
-        tree.resize(treeSize);
-        runs.resize(numRuns);
-    }
-
-    void addToRun(int runIndex, int value) {
-        if (runIndex < 1 || runIndex > numLeaves) {
-            throw std::out_of_range("Run index must be between 1 and 8");
-        }
-
-        // If the run is not empty, pop the first value
-        if (!runs[runIndex - 1].empty())
-            runs[runIndex - 1].pop();  // Remove the first value
-
-        // Push the new value to the run
-        runs[runIndex - 1].push(value);
-    }
-
-    // Function to run multiple tournaments based on the 2D input data
-    void runTournaments(const std::vector<std::vector<int>>& data) {
-        int numTournaments = data[0].size();  // Number of tournaments (columns)
-        int numRuns = data.size();            // Number of runs (rows)
-        
-        for (int t = 0; t < numTournaments; ++t) {
-            // Collect the contestants for the current tournament
-            std::vector<int> contestants;
-            for (int r = 0; r < numRuns; ++r) {
-                contestants.push_back(data[r][t]);
-            }
-
-            // Build the tree and get the loser for this tournament
-            buildTreeForTournament(contestants);
-        }
-    }
+public:
+    explicit LoserTree(int numRuns);
+    void Initialize(const std::vector<std::vector<int>>& data);
+    void addToRun(std::vector<std::vector<int>>& data, int runIndex, int value);
+    void runTournaments(const std::vector<std::vector<int>>& data) override;
 };
 
+#endif // LOSER_TREE_H
 
-int main() {
-    std::cout << "Instantiating Winner and Loser Trees...\n";
-    WinnerTree winnerTree(8);
-    LoserTree loserTree(8);
-    
-    // Test data
-    std::vector<std::vector<int>> testData = {
-        {10, 15, 16}, {9, 20, 38}, {20, 20, 30}, {6, 25, 28},
-        {8, 15, 50}, {9, 11, 16}, {90, 95, 99}, {17, 18, 20}
-    };
 
-    std::cout << "\nRunning Winner Tree tournaments:\n";
-    winnerTree.runTournaments(testData);
-    
-    std::cout << "\nRunning Loser Tree tournaments:\n";
-    loserTree.runTournaments(testData);
-    
-    std::vector<std::vector<int>>* modifiedData = winnerTree.addToRun(testData, 4, 15);
 
-    std::cout << "\nRunning New Winner Tree Tournaments.\n";
-    winnerTree.runTournaments(*modifiedData);
+/********************************LoserTree.cpp*********************************/
 
-    std::cout << "\nRunning the tournament with a merged data set:\n";
-    std::vector<std::vector<int>> mergedData = winnerTree.mergeRuns(testData);
-    
-    if (!mergedData.empty()) {
-        std::cout << "Merged and remaining runs:\n";
-        for (const auto& run : mergedData) {
-            std::cout << "{ ";
-            for (int val : run) {
-                std::cout << val << " ";
-            }
-            std::cout << "}\n";
-        }
-    } else {
-        std::cout << "No valid runs were merged.\n";
+#include "LoserTree.h"
+#include <iostream>
+
+LoserTree::LoserTree(int numRuns) : SelectionTree(numRuns) {}
+
+void LoserTree::Initialize(const std::vector<std::vector<int>>& data) {
+    int numRuns = data.size();
+    height = static_cast<int>(std::ceil(std::log2(numRuns)));
+    int treeSize = (1 << (height + 1)) - 1;
+
+    tree.resize(treeSize);
+
+    std::cout << "Loser Tree initialized with " << treeSize << " nodes.\n";
+}
+
+void LoserTree::addToRun(std::vector<std::vector<int>>& data, int runIndex, int value) {
+    if (runIndex < 1 || runIndex > data.size()) {
+        throw std::out_of_range("Run index must be between 1 and " + std::to_string(data.size()));
     }
+    data[runIndex - 1][0] = value;
+}
+
+void LoserTree::runTournaments(const std::vector<std::vector<int>>& data) {
+    Initialize(data);
     
-    std::cout << "End of program.\n";
-    return 0;
+    int numTournaments = data[0].size();
+    int numRuns = data.size();
+    
+    for (int t = 0; t < numTournaments; ++t) {
+        std::vector<int> contestants;
+        for (int r = 0; r < numRuns; ++r) {
+            contestants.push_back(data[r][t]);
+        }
+        buildTreeForTournament(contestants);
+    }
+}
+
+void LoserTree::buildTreeForTournament(const std::vector<int>& contestants) {
+    int k = contestants.size();
+
+    // Find the next power of 2 greater than or equal to k
+    int powerOfTwo = 1 << static_cast<int>(std::ceil(std::log2(k)));
+
+    // Create the tree structure to hold internal nodes and contestants
+    int numInternalNodes = powerOfTwo - 1;
+    tree.resize(2 * powerOfTwo - 1);  // This is the Loser Tree (final output)
+
+    // Step 1: Build the Winner Tree first
+    std::vector<Element> winnerTree(2 * powerOfTwo - 1);
+    
+    // Copy contestants to the bottom level of the winner tree
+    int leafStart = numInternalNodes;
+    for (int i = 0; i < k; ++i) {
+        winnerTree[leafStart + i] = Element(contestants[i], i + powerOfTwo);  // Assign contestants
+    }
+    for (int i = k; i < powerOfTwo; ++i) {
+        winnerTree[leafStart + i] = Element(std::numeric_limits<int>::max(), -1);  // Sentinel
+    }
+
+    // Step 2: Build the Winner Tree (to get winners for the matchups)
+    for (int i = leafStart - 1; i >= 0; --i) {
+        int leftChild = 2 * i + 1;
+        int rightChild = 2 * i + 2;
+
+        // Compare keys to determine the winner for each match
+        if (winnerTree[leftChild].key <= winnerTree[rightChild].key) {
+            winnerTree[i] = winnerTree[leftChild];  // Winner moves up the tree
+            winnerTree[i].record /= 2;
+        } else {
+            winnerTree[i] = winnerTree[rightChild]; // Winner moves up the tree
+            winnerTree[i].record /= 2;
+        }
+    }
+
+    // Step 3: Populate the Loser Tree by storing the loser of each match
+    for (int i = leafStart - 1; i >= 0; --i) {
+        int leftChild = 2 * i + 1;
+        int rightChild = 2 * i + 2;
+
+        // Fetch the losers from the winnerTree
+        if (winnerTree[leftChild].key <= winnerTree[rightChild].key) {
+            tree[i] = winnerTree[rightChild];  // Loser goes into the Loser Tree
+            tree[i].record /= 2;
+        } else {
+            tree[i] = winnerTree[leftChild];   // Loser goes into the Loser Tree
+            tree[i].record /= 2;
+        }
+    }
+
+    // Step 4: Output the overall winner from the Winner Tree
+    Element winner = winnerTree[0];
+    winner.record = 0;
+
+    // Output results for both trees
+    std::cout << "Overall Winner: Key = " << winner.key << ", Record = " << winner.record << std::endl;
+    
+    // Output Loser Tree
+    for (int i = 0; i < numInternalNodes; ++i) {
+        std::cout << "Loser Tree Node " << i << ": Key = " << tree[i].key << ", Record = " << tree[i].record << std::endl;
+    }
+    std::cout << std::endl;
 }
