@@ -1,3 +1,36 @@
+/**
+ * Solutions to Chapter 5, Section 8, Exercise 1 through 5 and 7 of Horowitz's
+ * Fundamentals of Data Structures in C++.
+ * 
+ * Task 1:
+ * Write C++ class definitions for winner and loser trees.
+ * 
+ * Task 2:
+ * Write a function to construct winner trees for records R_i, 1<=i<k, with
+ * key values K_i, 1<=i<k. Let the tree nodes T_i, 1<=i<k, with T_1,  
+ * 1<=i<k, a pointer to the winner of the tournament. Assume that k is a
+ * power of 2. Show that this construction can be carried out in time O(k).
+ * 
+ * Task 3:
+ * Do Exercise 2 for the case when k is not restricted to being a power of 2.
+ * 
+ * Task 4:
+ * Write a function to construct loser trees for records R_i, 1<=i<k, with
+ * key values K_i, 1<=i<k. Let the tree nodes T_i, 1<=i<k, with T_1,  
+ * 1<=i<k, a pointer to the winner of the tournament and T_0 a pointer to the
+ * overall winner.  Show that this construction can be carried out in time O(k).
+ * Assume that k is a power of 2.
+ * 
+ * Task 5:
+ * Do Exercise 4 for the case when k is not restricted to being a power of 2.
+ * 
+ * Task 7: 
+ * Write an algorithm, using a tree of winners, to carry out a k-way merge of
+ * k runs, k>=2. Use the data structures of Exercise 3 and assume the existence
+ * of a function to initialize the winner tree. This initialization function
+ * runs in linear time. Show that if there are n records in k runs together,
+ * then the computing time is O(n*log_2(k)).
+ */
 /*********************************main.cpp*************************************/
 #include "WinnerTree.h"
 #include "LoserTree.h"
