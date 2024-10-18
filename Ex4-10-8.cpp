@@ -9,7 +9,7 @@
  * 
  */
 
-/***********************************main.cpp**************************************/
+/**********************************main.cpp************************************/
 #include <iostream>
 #include "GenList.h"
 
@@ -39,7 +39,7 @@ int main() {
     std::cout << std::endl;
 
     // Test the parseFromString function
-    std::string input = "(a,(b,c))";
+    std::string input = "B(A,(D,E),(),C)";
     GenList* parsedList = GenList::parseFromString(input);
 
     std::cout << "Parsed List: ";
@@ -60,7 +60,7 @@ int main() {
 
 
 
-/**********************************GenList.h**************************************/
+/*********************************GenList.h************************************/
 #ifndef GENLIST_H
 #define GENLIST_H
 
@@ -120,7 +120,8 @@ public:
 #endif // GENLIST_H
 
 
-/**********************************GenList.tpp**************************************/
+
+/*********************************GenList.tpp**********************************/
 #ifndef GENLIST_TPP
 #define GENLIST_TPP
 
@@ -166,20 +167,24 @@ void GenList::addSublist(GenList* sublist) {
 }
 
 void GenList::print() const {
-    std::cout << "(";
     GenListNode* current = head;
+    bool isFirst = true;
+
     while (current) {
+        if (!isFirst) {
+            std::cout << ", ";
+        }
+        isFirst = false;
+
         if (current->isAtomic) {
             std::cout << current->data.atomic;
         } else {
+            std::cout << "(";
             current->data.sublist->print();
-        }
-        if (current->next) {
-            std::cout << ", ";
+            std::cout << ")";
         }
         current = current->next;
     }
-    std::cout << ")";
 }
 
 void GenList::incrementRef() {
@@ -283,34 +288,34 @@ void GenList::printNode(const GenListNode* node, int& nodeCount) const {
 GenList* GenList::parseFromString(const std::string& input) {
     std::stack<GenList*> listStack;
     GenList* currentList = nullptr;
-    std::string currentAtom;
+    bool isAtomic = false;
 
-    for (char c : input) {
-        if (c == '(') {
+    // Create the root list at the start
+    currentList = new GenList();
+
+    for (size_t i = 0; i < input.length(); i++) {
+        char c = input[i];
+        
+        if (c == '*') {
+            isAtomic = !isAtomic;
+        }
+        else if ((isAtomic || std::isalpha(c)) && c != ' ' && c != ',' && c != '(' && c != ')') {
+            currentList->addAtomic(c);
+        }
+        else if (c == '(') {
             GenList* newList = new GenList();
-            if (currentList) {
-                listStack.push(currentList);
-            }
+            listStack.push(currentList);
             currentList = newList;
-        } else if (c == ')') {
-            if (!currentAtom.empty()) {
-                currentList->addAtomic(currentAtom[0]);
-                currentAtom.clear();
-            }
+        }
+        else if (c == ')') {
             if (!listStack.empty()) {
                 GenList* parentList = listStack.top();
                 listStack.pop();
                 parentList->addSublist(currentList);
                 currentList = parentList;
             }
-        } else if (c == ',' || c == ' ') {
-            if (!currentAtom.empty()) {
-                currentList->addAtomic(currentAtom[0]);
-                currentAtom.clear();
-            }
-        } else {
-            currentAtom += c;
         }
+        // Ignore commas and spaces
     }
 
     return currentList;
@@ -319,7 +324,8 @@ GenList* GenList::parseFromString(const std::string& input) {
 #endif // GENLIST_TPP
 
 
-/********************************GenListNode.h***********************************/
+
+/********************************GenListNode.h********************************/
 #ifndef GENLISTNODE_H
 #define GENLISTNODE_H
 
@@ -366,7 +372,8 @@ private:
 #endif // GENLISTNODE_H
 
 
-/*******************************GenListNode.tpp**********************************/
+
+/*******************************GenListNode.tpp********************************/
 #ifndef GENLISTNODE_TPP
 #define GENLISTNODE_TPP
 
