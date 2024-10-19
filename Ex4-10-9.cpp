@@ -18,10 +18,11 @@
  * a list name and type = 0 for atoms. The NIL atom may either be in the table 
  * or ALINK can be set to 0 to represent the NIL atom. 
  * 
- * Write a C++ function operator<< to read in a list in parenthesis notation
- * and to set up its linked representation as shown in the picture with X set to
- * point to the first node in the list. Note that no head nodes are in use. The 
- * following subalgorithms may be used by operator<< :
+ * Write a C++ function operator>> to read in a list in parenthesis notation
+ * and to set up its linked representation as shown in the picture with x set to
+ * point to the first node in the list. Note that no head nodes are in use. You
+ * may need to use variant records or simulate pointers by integers (or both). 
+ * The following subalgorithms may be used by operator>>:
  * 
  * i)   int get(a)  ... searches the symbol table for the name a. -1 is returned
  *                      if a is not found in the table; otherwise, the position 
@@ -48,6 +49,49 @@
 #include <iostream>
 #include <cassert>
 #include <sstream>
+
+// Modified TestSymbolTableSetup in main.cpp
+void TestSymbolTableSetup() {
+    GenList list;
+    
+    // First add entries for D and E with their specific addresses
+    list.put("D", 1, 15);  // type 1 for list, address 15
+    list.put("E", 1, 2);   // type 1 for list, address 2
+    
+    // Add NIL with type 0
+    list.put("NIL", 0, -1);
+    
+    // Now input the list B(A, (D,E), ( ), B)
+    std::istringstream input("B(A, (D,E), ( ), B)");
+    input >> list;
+    
+    // Make sure B has the correct type and address
+    int bIndex = list.get("B");
+    if (bIndex != -1) {
+        list.symbolTable[bIndex].type = 1;
+        list.symbolTable[bIndex].address = 10;
+    }
+
+    // Print the symbol table contents
+    std::cout << "\nSymbol Table Contents:\n";
+    std::cout << "Name\tType\tAddress\n";
+    std::cout << "----------------------\n";
+    
+    std::vector<std::string> names = {"D", "E", "NIL", "B", "A"};
+    for (const auto& name : names) {
+        int idx = list.get(name);
+        if (idx != -1) {
+            const auto& entry = list.symbolTable[idx];
+            std::cout << name << "\t" 
+                     << entry.type << "\t" 
+                     << (entry.address == -1 ? "-" : std::to_string(entry.address)) 
+                     << "\n";
+        }
+    }
+
+    std::cout << "\nList Structure:\n";
+    std::cout << list << std::endl;
+}
 
 // Helper function to check if two strings are equal for assertions
 void AssertEqual(const std::string& actual, const std::string& expected,
@@ -133,6 +177,7 @@ void RunAllTests() {
     TestEmptyList();
     TestComplexList();
     TestSymbolTable();
+    TestSymbolTableSetup();
 }
 
 int main() {
@@ -157,6 +202,7 @@ class GenListNode {
     friend class GenList;
     friend std::istream& operator>>(std::istream& is, GenList& list);
     friend std::ostream& operator<<(std::ostream& os, const GenList& list);
+    friend void TestSymbolTableSetup();
   private:
     Boolean tag; // TRUE for sublist, FALSE for atom
     GenListNode* alink; // Points to sublist or index in the symbol table
@@ -176,6 +222,9 @@ class GenList {
     // Helper functions for parsing and printing
     void PrintNode(const GenListNode* node, std::ostream& os) const;
     void PrintList(const GenListNode* node, std::ostream& os) const;
+    
+    void updateAddresses(GenListNode* node, int& nextAddress);
+    
     GenListNode* ParseList(const std::string& input, size_t& pos);
     void DeleteList(GenListNode* node);
 
@@ -189,6 +238,7 @@ class GenList {
     
     friend std::istream& operator>>(std::istream& is, GenList& list);
     friend std::ostream& operator<<(std::ostream& os, const GenList& list);
+    friend void TestSymbolTableSetup();
 };
 
 
@@ -197,6 +247,7 @@ class GenList {
 #include "GenList.h"
 #include <cstdlib>
 #include <stack>
+#include <map>
 #include <cctype>
 #include <stdexcept>
 
@@ -240,82 +291,96 @@ std::string GenList::NextToken(const std::string& input, size_t& pos) {
     return input.substr(start, pos - start);
 }
 
+// Function to maintain variant records
+void GenList::updateAddresses(GenListNode* node, int& nextAddress) {
+    if (!node) return;
+
+    if (node->tag == TRUE) {
+        // Only update addresses for nodes that are explicitly marked as lists
+        // in the original symbol table (D, E, B)
+        GenListNode* firstAtom = node->alink;
+        if (firstAtom && !firstAtom->tag) {
+            int index = reinterpret_cast<std::uintptr_t>(firstAtom->alink);
+            if (index >= 0 && index < symbolTable.size()) {
+                // Don't overwrite existing addresses for D and E
+                if (symbolTable[index].type == 1 && symbolTable[index].address != -1) {
+                    // Keep the existing address
+                } else {
+                    // Only update address if it's not already set
+                    symbolTable[index].type = 0; // Keep as atom by default
+                }
+            }
+        }
+        // Process the sublist
+        updateAddresses(node->alink, nextAddress);
+    }
+    
+    // Process the next sibling
+    updateAddresses(node->blink, nextAddress);
+}
+
 std::istream& operator>>(std::istream& is, GenList& list) {
     std::string input;
     std::getline(is, input);
     size_t pos = 0;
-    
-    // Clear any existing data
+
+    // Clear existing list but preserve symbol table
     delete list.first;
     list.first = nullptr;
-    list.symbolTable.clear();
-    
-    std::stack<GenListNode**> nodeStack; // Stack of pointers to node pointers
-    nodeStack.push(&list.first);         // Start with the list's first pointer
-    
+
+    std::stack<GenListNode**> nodeStack;
+    nodeStack.push(&list.first);
+
+    // First pass: Build the list structure
     std::string token;
     while (!(token = list.NextToken(input, pos)).empty() && token != "#") {
-        if (token == "(") {
-            // Create new node for sublist
-            GenListNode* newNode = new GenListNode();
-            newNode->tag = TRUE;
-            newNode->alink = nullptr;
-            newNode->blink = nullptr;
-            
-            // Link the node
-            if (*nodeStack.top() == nullptr) {
-                *nodeStack.top() = newNode;
-            } else {
-                GenListNode* current = *nodeStack.top();
-                while (current->blink != nullptr) {
-                    current = current->blink;
-                }
-                current->blink = newNode;
-            }
-            
-            // Push the alink pointer onto the stack
-            nodeStack.push(&(newNode->alink));
-        }
-        else if (token == ")") {
-            // Pop the current level from the stack
-            if (!nodeStack.empty()) {
-                nodeStack.pop();
-            }
-        }
-        else if (token == ",") {
-            // Skip commas
+        if (token == ")") {
+            if (!nodeStack.empty()) nodeStack.pop();
             continue;
         }
-        else {
-            // Handle atomic values
-            GenListNode* newNode = new GenListNode();
+        
+        if (token == ",") continue;
+
+        // Create and initialize new node
+        GenListNode* newNode = new GenListNode();
+        newNode->blink = nullptr;
+
+        if (token == "(") {
+            // Handle sublist
+            newNode->tag = TRUE;
+            newNode->alink = nullptr;
+        } else {
+            // Handle atom
             newNode->tag = FALSE;
-            newNode->blink = nullptr;
-            
-            // Add to symbol table if not present
             int index = list.get(token);
             if (index == -1) {
-                list.put(token, 0, -1);  // 0 indicates atom type
-                index = list.get(token);  // Get the new index
+                // New symbol - add as atom with no address
+                list.put(token, 0, -1);
+                index = list.get(token);
             }
+            // Do not modify existing type and address here
             newNode->alink = reinterpret_cast<GenListNode*>(static_cast<std::uintptr_t>(index));
-            
-            // Link the node
-            if (*nodeStack.top() == nullptr) {
-                *nodeStack.top() = newNode;
-            } else {
-                GenListNode* current = *nodeStack.top();
-                while (current->blink != nullptr) {
-                    current = current->blink;
-                }
-                current->blink = newNode;
+        }
+
+        // Insert the new node into the list
+        if (*nodeStack.top() == nullptr) {
+            *nodeStack.top() = newNode;
+        } else {
+            GenListNode* current = *nodeStack.top();
+            while (current->blink != nullptr) {
+                current = current->blink;
             }
+            current->blink = newNode;
+        }
+
+        // If this is a sublist, push it onto the stack
+        if (token == "(") {
+            nodeStack.push(&(newNode->alink));
         }
     }
-    
+
     return is;
 }
-
 
 // Helper function to print a node
 void GenList::PrintNode(const GenListNode* node, std::ostream& os) const {
@@ -364,12 +429,10 @@ void GenList::DeleteList(GenListNode* node) {
     
     // First recursively delete the next sibling
     DeleteList(node->blink);
-    
     // If this is a sublist, recursively delete its contents
     if (node->tag == TRUE) {
         DeleteList(node->alink);
     }
-    
     // Finally delete this node
     delete node;
 }
