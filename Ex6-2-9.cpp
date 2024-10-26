@@ -110,7 +110,6 @@ class Graph {
     void BFSAdjListUtil(int startVertex);
     
     void ClearGraph();
-    void CleanupAdjMatrix();
     void AddEdge(int from, int to);
 
   public:
