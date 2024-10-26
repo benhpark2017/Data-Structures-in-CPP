@@ -15,6 +15,9 @@
  * 
  * Task 11: (done)
  * Repeat Exercise 10 assuming that the graph is to be traversed in DFS order.
+ * 
+ * This code is under construction! Exercises 12 to 14 are to follow.
+ * 
  */
 
 /**********************************main.cpp************************************/
