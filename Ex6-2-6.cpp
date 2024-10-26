@@ -37,15 +37,9 @@ enum Boolean { FALSE, TRUE };
 // Define the Vertex structure
 struct Vertex {
     int id;          // Unique identifier for the vertex
-    Boolean mark;    // Mark for graph algorithms
-    
+
     // Constructor
-    Vertex(int identifier = 0) : id(identifier), mark(FALSE) {}
-    
-    // Equality operator for vertex comparison
-    bool operator==(const Vertex& other) const {
-        return id == other.id;
-    }
+    Vertex(int identifier = 0) : id(identifier) {}
 };
 
 class GraphEdge {
@@ -68,26 +62,26 @@ private:
     std::vector<int> currentComponent;
     std::vector<std::pair<int, int>> currentComponentEdges;
 
-    void DFSAdjMatrixUtil(int vertex);      
+    void DFSAdjMatrixUtil(int vertex);  
     void DFSAdjListUtil(int vertex);        
     void BFSAdjMatrixUtil(int startVertex); 
-    void BFSAdjListUtil(int startVertex);  
-    void ClearGraph();
-    void CleanupAdjMatrix();
-    void AddEdge(int from, int to);
-    void OutputNewComponent();
+    void BFSAdjListUtil(int startVertex);   
+    void ClearGraph();                      
+    void CleanupAdjMatrix();                
+    void AddEdge(int from, int to);         
+    void OutputNewComponent();              
 
 public:
     Graph();
     Graph(const int vertices);
     ~Graph();
 
-    void Components();
-    void InitializeAdjMatrix();
-    void ReadAdjMatrix();
-    void PrintAdjMatrix() const;
-    void DFSAdjMatrix();
-    void BFSAdjMatrix();
+    void Components();              
+    void InitializeAdjMatrix();             
+    void ReadAdjMatrix();                   
+    void PrintAdjMatrix() const;            
+    void DFSAdjMatrix();                    
+    void BFSAdjMatrix();                    
 };
 
 #endif // GRAPH_H
