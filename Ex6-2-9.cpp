@@ -2,21 +2,19 @@
  * Solutions to Chapter 6, Section 2, Exercises 9 to 11 of Fundamentals of Data
  * Structures in C++ by Horowitz, Sahni and Mehta.
  *   
- * Task 9: (done)
+ * Task 9:
  * Augment the adjacency list representation of a graph, so that a field of data
  * of type KeyType is associated with each vertex.
  * 
- * Task 10: (done)
+ * Task 10:
  * Assume the graph representation of the previous exercise. Define an iterator
  * class BFSVertIter. A BFSVertIter object must be associated with a Graph
  * object. Define a function BFSVertIter::NextVertex() that returns a pointer
  * to the data object associated with a vertex in the graph in BFS order
  * starting with vertex 0.
  * 
- * Task 11: (done)
+ * Task 11:
  * Repeat Exercise 10 assuming that the graph is to be traversed in DFS order.
- * 
- * This code is under construction! Exercises 12 to 14 are to follow.
  * 
  */
 
