@@ -9,7 +9,7 @@
  * and that each edge has a length (which may be negative) associated with it.
  * Write a C++ function to determine the length of the shortest paths from
  * vertex 0 to the remaining vertices. The complexity of your function should
- * be O(n + e), where e is the number of edges in the graph. SHow that this is
+ * be O(n + e), where e is the number of edges in the graph. Show that this is
  * the case.
  * 
  * Answer to Task 2:
