@@ -52,7 +52,7 @@ int main() {
 #include <queue>
 #include <vector>
 #include <iomanip>
-#include <climits>
+#include <limits>
 
 const int nMax = 100;  // Maximum number of vertices
 enum Boolean {FALSE, TRUE};
@@ -94,10 +94,10 @@ bool Graph::isInQueue(const std::queue<int>& q,
 }
 
 Graph::Graph(int vertices) : n(vertices) {
-    // Initialize length matrix with INT_MAX (indicating no edge)
+    // Initialize length matrix with std::numeric_limits<int>::max() (indicating no edge)
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
-            length[i][j] = (i == j) ? 0 : INT_MAX;
+            length[i][j] = (i == j) ? 0 : std::numeric_limits<int>::max();
         }
     }
 }
@@ -105,7 +105,7 @@ Graph::Graph(int vertices) : n(vertices) {
 void Graph::BellmanFord(const int n, const int v) {
     // Initialize distances
     for (int i = 0; i < n; i++) {
-        dist[i] = (i == v) ? 0 : INT_MAX;
+        dist[i] = (i == v) ? 0 : std::numeric_limits<int>::max();
     }
     
     std::queue<int> vertexQueue;        // Queue for vertices to process
@@ -113,7 +113,7 @@ void Graph::BellmanFord(const int n, const int v) {
     
     // Add vertices adjacent to source to queue
     for (int i = 0; i < n; i++) {
-        if (i != v && length[v][i] < INT_MAX) {
+        if (i != v && length[v][i] < std::numeric_limits<int>::max()) {
             dist[i] = length[v][i];  // Set initial distance
             vertexQueue.push(i);     // Add to queue
             inQueue[i] = true;       // Mark as in queue
@@ -128,8 +128,8 @@ void Graph::BellmanFord(const int n, const int v) {
         
         // Check all vertices adjacent from i
         for (int u = 0; u < n; u++) {
-            if (length[i][u] < INT_MAX &&     // Edge exists
-                dist[i] != INT_MAX &&         // Source distance is not infinite
+            if (length[i][u] < std::numeric_limits<int>::max() &&     // Edge exists
+                dist[i] != std::numeric_limits<int>::max() &&         // Source distance is not infinite
                 dist[u] > dist[i] + length[i][u]) {
                 
                 // Update distance
@@ -169,7 +169,7 @@ void Graph::printDistances() const {
     
     for (int i = 0; i < n; i++) {
         std::cout << std::setw(11) << i << "\t";
-        if (dist[i] == INT_MAX) {
+        if (dist[i] == std::numeric_limits<int>::max()) {
             std::cout << "INF" << std::endl;
         } else {
             std::cout << std::setw(8) << dist[i] << std::endl;
