@@ -3,7 +3,7 @@
  * Structures in C++ by Horowitz, Sahni and Mehta.
  *   
  * Task 9:
- * Augment the adjacency list representation of a graph, so that a field of data
+ * Augment the adjacency list representation of a graph, so that a field data
  * of type KeyType is associated with each vertex.
  * 
  * Task 10:
