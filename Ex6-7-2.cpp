@@ -113,24 +113,15 @@ class Graph {
     int n;
     EdgePtr* HeadNodes;
   
-    void DFSAdjListUtil(int vertex);
-    void BFSAdjListUtil(int startVertex);
-    void ClearGraph();
-
   public:
     Graph();
     Graph(const int vertices);
-    void ReadAdjList();
-    void PrintAdjList() const;
-    void DFSAdjList();
-    void BFSAdjList();
     void AddEdge(int from, int to);
     bool isBipartite();
-    ~Graph() {} // implementation without ClearGraph() function.
+    ~Graph() {}
 };
 
 #endif // GRAPH_H
-
 
 
 /*********************************Graph.cpp************************************/
@@ -152,70 +143,6 @@ Graph::Graph(const int vertices) : n(vertices) {
     HeadNodes = new EdgePtr[n]();
 }
 
-void Graph::DFSAdjListUtil(int vertex) {
-    visited[vertex] = TRUE;
-    std::cout << vertex << " ";
-    
-    EdgePtr current = HeadNodes[vertex];
-    while (current) {
-        int nextVertex;
-        if (current->vertex1.id == vertex) nextVertex = current->vertex2.id;
-        else nextVertex = current->vertex1.id;
-        
-        if (!visited[nextVertex]) {
-            DFSAdjListUtil(nextVertex);
-        }
-        
-        current = current->path1;
-    }
-}
-
-void Graph::BFSAdjListUtil(int startVertex) {
-    std::vector<int> queue;
-    
-    visited[startVertex] = TRUE;
-    queue.push_back(startVertex);
-    
-    while (!queue.empty()) {
-        int currentVertex = queue.front();
-        std::cout << currentVertex << " ";
-        queue.erase(queue.begin());
-        
-        EdgePtr current = HeadNodes[currentVertex];
-        while (current) {
-            int adjacentVertex;
-            
-            if (current->vertex1.id == currentVertex) {
-                adjacentVertex = current->vertex2.id;
-            } else {
-                adjacentVertex = current->vertex1.id;
-            }
-            
-            if (!visited[adjacentVertex]) {
-                visited[adjacentVertex] = TRUE;
-                queue.push_back(adjacentVertex);
-            }
-            
-            current = current->path1;
-        }
-    }
-}
-
-void Graph::ClearGraph() {
-    if (HeadNodes) {
-        for (int i = 0; i < n; i++) {
-            EdgePtr current = HeadNodes[i];
-            while (current) {
-                EdgePtr temp = current;
-                current = current->path1;
-                delete temp;
-            }
-        }
-        delete[] HeadNodes;
-        HeadNodes = nullptr;
-    }
-}
-
 void Graph::AddEdge(int from, int to) {
     EdgePtr newEdge = new GraphEdge;
     newEdge->vertex1.id = from;
@@ -232,133 +159,6 @@ void Graph::AddEdge(int from, int to) {
     
     reverseEdge->path1 = HeadNodes[to];
     HeadNodes[to] = reverseEdge;
-}
-
-void Graph::ReadAdjList() {
-    std::cout << "Enter the number of vertices: ";
-    std::cin >> n;
-    
-    ClearGraph();
-    
-    HeadNodes = new EdgePtr[n];
-    for (int i = 0; i < n; i++) {
-        HeadNodes[i] = nullptr;
-    }
-    
-    std::cout << "\nFor each vertex, enter its adjacent vertices.\n";
-    std::cout << "Enter -1 to end the list for a vertex.\n\n";
-    
-    for (int i = 0; i < n; i++) {
-        std::cout << "Enter adjacent vertices for vertex " << i << ": ";
-        
-        while (TRUE) {
-            int adjacent;
-            std::cin >> adjacent;
-            
-            if (adjacent == -1) break;
-            
-            if (adjacent < 0 || adjacent >= n || adjacent == i) {
-                std::cout << "Invalid vertex. Please enter a number between 0 and " 
-                         << n - 1 << " (excluding " << i << ") or -1 to end: ";
-                continue;
-            }
-            
-            bool edgeExists = FALSE;
-            EdgePtr current = HeadNodes[i];
-            while (current) {
-                if ((current->vertex1.id == i && current->vertex2.id == adjacent) ||
-                    (current->vertex1.id == adjacent && current->vertex2.id == i)) {
-                    edgeExists = TRUE;
-                    break;
-                }
-                current = current->path1;
-            }
-            
-            if (!edgeExists) {
-                AddEdge(i, adjacent);
-            }
-        }
-    }
-    
-    std::cout << "\nGraph has been successfully read.\n";
-}
-
-void Graph::PrintAdjList() const {
-    if (!HeadNodes) {
-        std::cout << "Graph is empty. Please read the adjacency list first.\n";
-        return;
-    }
-
-    std::cout << "\nAdjacency List:\n";
-    for (int i = 0; i < n; i++) {
-        std::cout << i << " -> ";
-        EdgePtr current = HeadNodes[i];
-        bool first = TRUE;
-        
-        while (current) {
-            if (!first) {
-                std::cout << ", ";
-            }
-            std::cout << current->vertex2.id;
-            current = current->path1;
-            first = FALSE;
-        }
-        std::cout << std::endl;
-    }
-}
-
-void Graph::DFSAdjList() {
-    if (!HeadNodes) {
-        std::cout << "Graph is empty. Please read the adjacency list first.\n";
-        return;
-    }
-
-    std::cout << "\nDepth First Search starting from vertex 0: ";
-    
-    visited = new bool[n];
-    for (int i = 0; i < n; i++) {
-        visited[i] = FALSE;
-    }
-    
-    DFSAdjListUtil(0);
-    
-    for (int i = 0; i < n; i++) {
-        if (!visited[i]) {
-            std::cout << "\nDisconnected component starting from vertex " << i << ": ";
-            DFSAdjListUtil(i);
-        }
-    }
-    
-    std::cout << std::endl;
-    
-    delete[] visited;
-    visited = nullptr;
-}
-
-void Graph::BFSAdjList() {
-    if (!HeadNodes) {
-        std::cout << "Graph is empty. Please read the adjacency list first.\n";
-        return;
-    }
-    
-    visited = new bool[n];
-    for (int i = 0; i < n; i++) {
-        visited[i] = FALSE;
-    }
-    
-    std::cout << "\nBFS traversal starting from vertex 0: ";
-    BFSAdjListUtil(0);
-    
-    for (int i = 0; i < n; i++) {
-        if (!visited[i]) {
-            std::cout << "\nDisconnected component starting from vertex " << i << ": ";
-            BFSAdjListUtil(i);
-        }
-    }
-    std::cout << std::endl;
-    
-    delete[] visited;
-    visited = nullptr;
 }
 
 // Function to check if the graph is bipartite and display partitions if it is
