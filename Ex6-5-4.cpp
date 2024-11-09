@@ -200,7 +200,6 @@ void Graph::TopologicalOrder() {
 #define LIST_H
 
 #include <iostream>
-#include <limits> // For std::numeric_limits
 
 template <typename Type>
 class List;
@@ -212,7 +211,7 @@ template <typename Type>
 class ListNode {
     friend class List<Type>;
     friend class ListIterator<Type>;
-    
+    friend class AOENetwork;
     // Add this line to declare operator<< as a friend of ListNode
     template <typename T>
     friend std::ostream& operator<<(std::ostream& os, const List<T>& list);
@@ -222,6 +221,7 @@ private:
     ListNode *link;
 
 public:
+    Type getData() { return data; }
     ListNode(Type element = 0, ListNode *next = nullptr) : data(element), link(next) {}
 };
 
@@ -704,12 +704,13 @@ void AOENetwork::analyzeNetwork() {
     
 void AOENetwork::printAllReductionPotentials() {
     std::cout << "Accelerating project lengths" << std::endl;
-
     bool reductionPossible = false;
 
     std::cout << "Activity\tPotential Project Length Reduction\n";
 
-    // Iterate over each activity (u -> v) to find possible reductions
+    int originalProjectLength = *std::max_element(earliestTimes.begin(), earliestTimes.end());
+
+    // Iterate over each activity (u -> v) in the network
     for (int u = 0; u < n; ++u) {
         ListIterator<Pair> li(HeadNodes[u]);
         while (li.NotNull()) {
@@ -717,22 +718,44 @@ void AOENetwork::printAllReductionPotentials() {
             int v = activity.vertex;
             int duration = activity.dur;
 
-            // Calculate slack for the activity (u -> v)
-            int earlyTime = earliestTimes[u];
-            int lateTime = latestTimes[v] - duration;
-            int slack = lateTime - earlyTime;
+            // Check if this activity is critical
+            bool isCritical = (earliestTimes[u] == latestTimes[u] && 
+                               earliestTimes[v] == latestTimes[v] && 
+                               earliestTimes[v] == earliestTimes[u] + duration);
 
-            // If slack > 0, this activity is non-critical and has potential for reduction
-            if (slack > 0) {
-                reductionPossible = true;
-                std::cout << "(" << u << " -> " << v << ")\t\t" << slack << " units\n";
+            if (isCritical) {
+                // Temporarily reduce the duration of the activity (u -> v)
+                int maxReduction = 0;
+                for (int reduction = 1; reduction <= duration; ++reduction) {
+                    // Simulate reducing the duration by "reduction" units
+                    earliestTimes.assign(n, 0);  // Reset earliest times for recalculation
+                    HeadNodes[u].getFirst()->data.dur = duration - reduction; // Temporarily reduce duration
+                    
+                    calculateEarliestTimes();  // Recalculate earliest times
+                    int newProjectLength = *std::max_element(earliestTimes.begin(), earliestTimes.end());
+                    
+                    // Check the reduction in project length
+                    int lengthReduction = originalProjectLength - newProjectLength;
+                    
+                    // Update max reduction if this reduction is greater
+                    if (lengthReduction > maxReduction) {
+                        maxReduction = lengthReduction;
+                    }
+
+                    // Restore the original duration
+                    HeadNodes[u].getFirst()->data.dur = duration;
+                }
+
+                // Only output activities that have a reduction potential
+                if (maxReduction > 0) {
+                    reductionPossible = true;
+                    std::cout << "(" << u << " -> " << v << ")\t\t" << maxReduction << " units\n";
+                }
             }
-
             li.Next();
         }
     }
 
-    // If no activity has potential reduction, output a message
     if (!reductionPossible) {
         std::cout << "The project length cannot be reduced by speeding any single activity.\n";
     }
