@@ -26,6 +26,75 @@ class Element {
     int link;
 };
 
+int ListMerge(Element *list, const int start1, const int start2) {
+    Element dummy(0); // Create a dummy node
+    int iResult = -1; // Use -1 as dummy position
+    int i1 = start1, i2 = start2;
+    
+    // Initialize dummy node
+    list[iResult].link = 0;
+    
+    while (i1 != -1 && i2 != -1) {
+        if (list[i1].key <= list[i2].key) {
+            if (iResult == -1) {
+                iResult = i1;
+                dummy.link = i1;
+            } else {
+                list[iResult].link = i1;
+                iResult = i1;
+            }
+            i1 = list[i1].link;
+        } else {
+            if (iResult == -1) {
+                iResult = i2;
+                dummy.link = i2;
+            } else {
+                list[iResult].link = i2;
+                iResult = i2;
+            }
+            i2 = list[i2].link;
+        }
+    }
+    
+    // Attach remaining elements
+    if (i1 == -1) {
+        if (iResult == -1) dummy.link = i2;
+        else list[iResult].link = i2;
+    } else {
+        if (iResult == -1) dummy.link = i1;
+        else list[iResult].link = i1;
+    }
+    
+    return dummy.link;
+}
+
+int recursiveMergeSort(Element *list, const int left, const int right) {
+    if (left >= right) {
+        if (left == right) {
+            list[left].link = -1; // Mark end of list with -1
+            return left;
+        }
+        return -1;
+    }
+    
+    int mid = (left + right) / 2;
+    int start1 = recursiveMergeSort(list, left, mid);
+    int start2 = recursiveMergeSort(list, mid + 1, right);
+    
+    return ListMerge(list, start1, start2);
+}
+
+void printLinkedList(Element *list, int start) {
+    std::cout << "Sorted list: ";
+    int current = start;
+    while (current != -1) {
+        std::cout << list[current].getKey() << " ";
+        current = list[current].link;
+    }
+    std::cout << std::endl;
+}
+
+
 // Reverses the elements in the range [start, end]
 void reverseSegment(Element* arr, int start, int end) {
     while (start < end) {
