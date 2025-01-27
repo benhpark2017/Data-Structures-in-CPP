@@ -241,7 +241,7 @@ void heapSort(std::vector<Element>& elements) {
     }
 }
 
-// Do NOT use fewer than 10 permutations! Otherwise, the program will return
+// Do NOT use 0 as the number of permutations! Otherwise, the program will return
 // a segmentation fault.
 // Function to generate a random permutation of the first n elements in the vector
 void permute(std::vector<Element>& elements, int n) {
