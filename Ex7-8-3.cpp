@@ -137,18 +137,10 @@ int chainSelectionSort(std::vector<Element>& list, int first) {
 }
 
 int main() {
-    std::vector<Element> list;
-    // Initialize list with encapsulated Element objects
-    list.push_back(Element(26, 9));
-    list.push_back(Element(5, 6));
-    list.push_back(Element(77, 0));
-    list.push_back(Element(1, 2));
-    list.push_back(Element(61, 3));
-    list.push_back(Element(11, 8));
-    list.push_back(Element(59, 5));
-    list.push_back(Element(15, 10));
-    list.push_back(Element(48, 7));
-    list.push_back(Element(19, 1));
+    std::vector<Element> list = {
+        {26, 9}, {5, 6}, {77, 0}, {1, 2}, {61, 3},
+        {11, 8}, {59, 5}, {15, 10}, {48, 7}, {19, 1}
+    };
     
     int first = 4;  // Start with element at index 3 (value 1)
     
