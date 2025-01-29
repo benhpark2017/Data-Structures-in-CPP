@@ -168,8 +168,8 @@ public:
     
         // Loop through the hash table
         while (true) {
-            // If the current bucket is empty, the search ends
-            if (hashTable[i].id == nullptr) {
+            // If the current bucket is empty (not just deleted), the search ends
+            if (hashTable[i].id == nullptr && !hashTable[i].deleted) {
                 return -1; // Not found
             }
     
