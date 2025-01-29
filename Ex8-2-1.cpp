@@ -162,6 +162,32 @@ public:
         } while (index != start);
     }
 
+    int LinearSearch(const identifier& x, int (*hashFunction)(const identifier&)) {
+        int i = hashFunction(x); // Compute the starting index using the hash function
+        int start = i; // Save the starting index to detect full loops
+    
+        // Loop through the hash table
+        while (true) {
+            // If the current bucket is empty, the search ends
+            if (hashTable[i].id == nullptr) {
+                return -1; // Not found
+            }
+    
+            // If the current bucket is not deleted and matches the target identifier, return the index
+            if (!hashTable[i].deleted && hashTable[i] == x) {
+                return i; // Found the identifier
+            }
+    
+            // Move to the next bucket (with wrap-around)
+            i = (i + 1) % buckets;
+    
+            // If we've looped back to the start, the search ends
+            if (i == start) {
+                return -1; // Not found
+            }
+        }
+    }
+
     // Added method to print table contents
     void PrintTable() const {
         std::cout << "Symbol Table Contents:" << std::endl;
@@ -190,13 +216,23 @@ private:
     }
 };
 
+// Custom hash function for identifier
+int identifierHashFunction(const identifier& id) {
+    unsigned long hash = 5381;
+    const char* str = id.id;
+    int c;
+    while ((c = *str++)) {
+        hash = ((hash << 5) + hash) + c; // hash * 33 + c
+    }
+    return hash % 10; // Assuming a small table size for demonstration
+}
+
 int main() {
     // Create a symbol table with a small size for demonstration
     SymbolTable<const char*, int> symTable(10);
 
     // Insert some elements
     try {
-
         symTable.Insert("apple", 10);
         symTable.Insert("banana", 20);
         symTable.Insert("cherry", 30);
@@ -231,6 +267,21 @@ int main() {
         symTable.Insert("apple", 15);
         std::cout << "\nAfter updating 'apple':" << std::endl;
         symTable.PrintTable();
+
+        // Test LinearSearch function
+        identifier appleId;
+        appleId.id = new char[6];
+        strcpy(appleId.id, "apple");
+        appleId.n = 15;
+
+        int index = symTable.LinearSearch(appleId, identifierHashFunction);
+        if (index != -1) {
+            std::cout << "\nLinearSearch found 'apple' at index: " << index << std::endl;
+        } else {
+            std::cout << "\nLinearSearch did not find 'apple'" << std::endl;
+        }
+
+        delete[] appleId.id;
 
     } catch (const std::exception& e) {
         std::cout << "Error: " << e.what() << std::endl;
