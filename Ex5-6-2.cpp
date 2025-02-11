@@ -65,6 +65,18 @@ int main() {
 
 
 
+/********************************Constants.h***********************************/
+#ifndef CONSTANTS_H
+#define CONSTANTS_H
+
+namespace constants {
+    const int DefaultSize{100};
+};
+
+#endif // CONSTANTS_H
+
+
+
 /*********************************MinPQ.h*************************************/
 #ifndef MIN_PQ_H
 #define MIN_PQ_H
