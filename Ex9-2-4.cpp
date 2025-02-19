@@ -237,15 +237,10 @@ class MinMaxHeap : public DEPQ<KeyType> {
   public:
     MinMaxHeap(const int sz = constants::DefaultHeapSize);
     ~MinMaxHeap();
-    void VerifyMax(int i, const Element<KeyType>& x);
-    void VerifyMin(int i, const Element<KeyType>& x);
+
     void Insert(const Element<KeyType>&);
     Element<KeyType>* DeleteMax(Element<KeyType>&);
     Element<KeyType>* DeleteMin(Element<KeyType>&);
-    int MinChildGrandChild(int i);
-    void MinMaxFull();
-    void MinMaxEmpty();
-    int level(int i);
     void Initialize(Element<KeyType>* input, int size);
     void printHeap();
     
@@ -253,6 +248,12 @@ class MinMaxHeap : public DEPQ<KeyType> {
     Element<KeyType> *h;
     int n;
     int MaxSize;
+    void VerifyMax(int i, const Element<KeyType>& x);
+    void VerifyMin(int i, const Element<KeyType>& x);
+    int MinChildGrandChild(int i);
+    void MinMaxFull();
+    void MinMaxEmpty();
+    int level(int i);
 };
 
 #include "MinMaxHeap.tpp"
@@ -603,12 +604,6 @@ class Deap : public DEPQ<KeyType> {
     void Insert(const Element<KeyType>& x);
     Element<KeyType>* DeleteMax(Element<KeyType>& x);
     Element<KeyType>* DeleteMin(Element<KeyType>& x);
-    
-    void DeapFull();
-    void DeapEmpty();
-    bool MaxHeap(int p);
-    int MinPartner(int p);
-    int MaxPartner(int p);
     void MinInsert(int pos, const Element<KeyType>& x);
     void MaxInsert(int pos, const Element<KeyType>& x);
     void Initialize(const Element<KeyType>* input, int size);
@@ -618,6 +613,11 @@ class Deap : public DEPQ<KeyType> {
     Element<KeyType> *d;
     int n;          // Current size of Deap d[]
     int MaxSize;    // Maximum allowable size of Deap d[]
+    void DeapFull();
+    void DeapEmpty();
+    bool MaxHeap(int p);
+    int MinPartner(int p);
+    int MaxPartner(int p);
 };
 
 #include "Deap.tpp"
