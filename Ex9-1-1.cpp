@@ -109,15 +109,9 @@ class MinMaxHeap : public DEPQ<KeyType> {
   public:
     MinMaxHeap(const int sz = constants::DefaultHeapSize);
     ~MinMaxHeap();
-    void VerifyMax(int i, const Element<KeyType>& x);
-    void VerifyMin(int i, const Element<KeyType>& x);
     void Insert(const Element<KeyType>&);
     Element<KeyType>* DeleteMax(Element<KeyType>&);
     Element<KeyType>* DeleteMin(Element<KeyType>&);
-    int MinChildGrandChild(int i);
-    void MinMaxFull();
-    void MinMaxEmpty();
-    int level(int i);
     void Initialize(Element<KeyType>* input, int size);
     void printHeap();
     
@@ -125,6 +119,12 @@ class MinMaxHeap : public DEPQ<KeyType> {
     Element<KeyType> *h;
     int n;
     int MaxSize;
+    void VerifyMax(int i, const Element<KeyType>& x);
+    void VerifyMin(int i, const Element<KeyType>& x);
+    int MinChildGrandChild(int i);
+    void MinMaxFull();
+    void MinMaxEmpty();
+    int level(int i);
 };
 
 #include "MinMaxHeap.tpp"
