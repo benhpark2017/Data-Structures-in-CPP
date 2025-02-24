@@ -1,6 +1,6 @@
 /**
- * Solutions to Chapter 9, Section 3, Exercise 2 of Horowitz, Sahni, and Mehta's
- * Fundamentals of Data Structures in C++, 1st Edition.
+ * Solutions to Chapter 9, Section 3, Exercises 2 and 3 of Horowitz, Sahni, and
+ * Mehta's Fundamentals of Data Structures in C++, 1st Edition.
  * 
  * Task 2:
  * Compare the performance of leftist trees and min heaps under the assumption
@@ -15,11 +15,19 @@
  *     your computing times.
  * (b) Based on your experiments, make some statements about the relative merits
  *     of the two priority-queue schemes.
+ * 
+ * Task 3:
+ * Write a function to initialize a min leftist tree with n elements. Assume
+ * that the node structure is the same as that used in the text. Your function
+ * must run in Θ(n) time. Show that this is the case. Can you think of a way
+ * to do this initialization in Θ(n) time such that the resulting min leftist
+ * tree is also a complete binary tree?
  */
+
+
 
 /*********************************main.cpp*************************************/
 #include <iostream>
-#include <vector>
 #include <algorithm>
 #include <random>
 #include <chrono>
@@ -92,8 +100,10 @@ int main() {
     std::mt19937 rng(rd()); // Mersenne Twister engine
 
     // Parameters
-    int n = 1000; // Number of initial elements
-    int mValues[] = {100, 200, 500, 1000, 2000, 3000, 4000, 5000, 10000}; // Sequence lengths
+    int n = 100; // Number of initial elements
+    
+    // Sequence lengths
+    int mValues[] = {100, 200, 500, 1000, 2000, 3000, 4000, 5000, 10000};
 
     // Generate a random list of n elements
     Element<int>* initialElements = generateRandomList(n, rng);
@@ -109,7 +119,7 @@ int main() {
     for (int m : mValues) {
         // Generate a random sequence of m operations
         char* operations = generateRandomOperations(m, rng);
-
+        
         // Measure time for MinHeap
         double heapTime = measureMinHeapTime(minHeap, operations, m, rng);
         double avgHeapTime = heapTime / m;
@@ -151,18 +161,12 @@ public:
     Element(KeyType k) : key(k) {}
 
     // Getter for key
-    KeyType getKey() const {
-        return key;
-    }
+    KeyType getKey() const { return key; }
 
     // Setter for key
-    void setKey(KeyType k) {
-        key = k;
-    }
+    void setKey(KeyType k) { key = k; }
 
-    bool operator>(const Element<KeyType>& other) const {
-        return key > other.getKey();
-    }
+    bool operator>(const Element<KeyType>& other) const { return key > other.getKey(); }
 };
 
 #endif // ELEMENT_H
@@ -193,44 +197,28 @@ class LeftistNode {
     LeftistNode(const Element<KeyType>& el) : data(el), LeftChild(nullptr), RightChild(nullptr), shortest(1) {}
 
     // Getter for data
-    Element<KeyType> getData() const {
-        return data;
-    }
+    Element<KeyType> getData() const { return data; }
 
     // Setter for data
-    void setData(const Element<KeyType>& el) {
-        data = el;
-    }
+    void setData(const Element<KeyType>& el) { data = el; }
 
     // Getter for LeftChild
-    LeftistNode* getLeftChild() const {
-        return LeftChild;
-    }
+    LeftistNode* getLeftChild() const { return LeftChild; }
 
     // Setter for LeftChild
-    void setLeftChild(LeftistNode* child) {
-        LeftChild = child;
-    }
+    void setLeftChild(LeftistNode* child) { LeftChild = child; }
 
     // Getter for RightChild
-    LeftistNode* getRightChild() const {
-        return RightChild;
-    }
+    LeftistNode* getRightChild() const { return RightChild; }
 
     // Setter for RightChild
-    void setRightChild(LeftistNode* child) {
-        RightChild = child;
-    }
+    void setRightChild(LeftistNode* child) { RightChild = child; }
 
     // Getter for shortest
-    int getShortest() const {
-        return shortest;
-    }
+    int getShortest() const { return shortest; }
 
     // Setter for shortest
-    void setShortest(int s) {
-        shortest = s;
-    }
+    void setShortest(int s) { shortest = s; }
 };
 
 #endif // LEFTIST_NODE_H
@@ -238,7 +226,6 @@ class LeftistNode {
 
 
 /**********************************MinPQ.h*************************************/
-
 #ifndef MIN_PQ_H
 #define MIN_PQ_H
 
@@ -258,7 +245,6 @@ class MinPQ {
 
 
 /*****************************MinLeftistTree.h*********************************/
-
 #ifndef MIN_LEFTIST_TREE_H
 #define MIN_LEFTIST_TREE_H
 
@@ -309,7 +295,10 @@ void MinLeftistTree<KeyType>::DeleteHelper(LeftistNode<KeyType>* node) {
     }
 }
 
-//Initialize function that initializes a minimum leftist tree
+/**
+ * Solution to Chapter 9, Section 3, Exercise 3, Part 1.
+ * A function with Θ(n) time complexity that initializes a minimum leftist tree.
+ */
 template <typename KeyType>
 void MinLeftistTree<KeyType>::Initialize(const Element<KeyType> elements[], int numElements) {
     // Clear the existing tree
@@ -328,6 +317,63 @@ void MinLeftistTree<KeyType>::Initialize(const Element<KeyType> elements[], int 
         tempTree.root = nullptr; // Prevent double deletion
     }
 }
+
+/**
+ * Solution to Chapter 9, Section 3, Exercise 3, Part 2.
+ * A Θ(n)-complex function that initializes a minimum leftist tree that is also
+ * a complete binary tree.
+ */
+/**
+template <typename KeyType>
+void MinLeftistTree<KeyType>::Initialize(const Element<KeyType> elements[], int numElements) {
+    // Clear existing tree
+    DeleteHelper(root);
+    root = nullptr;
+    
+    if (numElements == 0) return;
+    
+    // Step 1: Create an array of single-node trees
+    LeftistNode<KeyType>** currentLevel = new LeftistNode<KeyType>*[numElements];
+    for (int i = 0; i < numElements; i++) {
+        currentLevel[i] = new LeftistNode<KeyType>(elements[i]);
+    }
+    
+    int currentSize = numElements;
+    
+    // Step 2: Combine pairs of trees bottom-up
+    while (currentSize > 1) {
+        // Calculate size of next level
+        int nextSize = (currentSize + 1) / 2;
+        LeftistNode<KeyType>** nextLevel = new LeftistNode<KeyType>*[nextSize];
+        
+        // Combine pairs of trees at current level
+        int j = 0;
+        for (int i = 0; i < currentSize - 1; i += 2) {
+            nextLevel[j++] = MinUnion(currentLevel[i], currentLevel[i + 1]);
+        }
+        
+        // Handle odd number of nodes
+        if (currentSize % 2 == 1) {
+            nextLevel[j] = currentLevel[currentSize - 1];
+        }
+        
+        // Delete old level array, but not the nodes themselves.
+        delete[] currentLevel;
+        
+        // Update for next iteration
+        currentLevel = nextLevel;
+        currentSize = nextSize;
+    }
+    
+    // Set the root to the final merged tree
+    if (currentSize > 0) {
+        root = currentLevel[0];
+    }
+    
+    // Clean up the final array
+    delete[] currentLevel;
+}
+*/
 
 // MinCombine implementation
 template <typename KeyType>
@@ -357,7 +403,6 @@ LeftistNode<KeyType>* MinLeftistTree<KeyType>::MinUnion(LeftistNode<KeyType>* a,
     else a->setRightChild(MinUnion(a->getRightChild(), b));
     
     // Leftist Tree property
-    
     // Interchange subtrees if needed
     if (!a->getLeftChild()) { a->setLeftChild(a->getRightChild()); a->setRightChild(nullptr); }
     else if (!a->getRightChild() || a->getLeftChild()->getShortest() < a->getRightChild()->getShortest()) {
@@ -491,54 +536,80 @@ Element<KeyType>* MinLeftistTree<KeyType>::DeleteMin(Element<KeyType>& minElemen
     return &minElement;
 }
 
-// Helper method for horizontal tree visualization
 template <typename KeyType>
 void MinLeftistTree<KeyType>::PrintTree() const {
     if (root) {
         std::cout << "root: " << root->getData().getKey() << "(" << root->getShortest() << ")" << std::endl;
-        std::vector<LeftistNode<KeyType>*> currentLevel = {root};
-        std::vector<LeftistNode<KeyType>*> nextLevel;
-        std::vector<LeftistNode<KeyType>*> parents = {nullptr};  // Track parent for each node
-        
-        while (!currentLevel.empty()) {
-            nextLevel.clear();
-            std::vector<LeftistNode<KeyType>*> newParents;
-            
-            for (size_t i = 0; i < currentLevel.size(); i++) {
+
+        // Initialize arrays for current level and parents
+        int currentLevelSize = 1;
+        LeftistNode<KeyType>** currentLevel = new LeftistNode<KeyType>*[currentLevelSize];
+        currentLevel[0] = root;
+
+        LeftistNode<KeyType>** parents = new LeftistNode<KeyType>*[currentLevelSize];
+        parents[0] = nullptr;
+
+        while (currentLevelSize > 0) {
+            // Calculate the size of the next level
+            int nextLevelSize = 0;
+            for (int i = 0; i < currentLevelSize; i++) {
+                if (currentLevel[i]->getLeftChild()) nextLevelSize++;
+                if (currentLevel[i]->getRightChild()) nextLevelSize++;
+            }
+
+            // Allocate arrays for the next level and new parents
+            LeftistNode<KeyType>** nextLevel = new LeftistNode<KeyType>*[nextLevelSize];
+            LeftistNode<KeyType>** newParents = new LeftistNode<KeyType>*[nextLevelSize];
+
+            // Populate the next level and new parents arrays
+            int index = 0;
+            for (int i = 0; i < currentLevelSize; i++) {
                 LeftistNode<KeyType>* node = currentLevel[i];
                 LeftistNode<KeyType>* parent = parents[i];
-                
+
                 if (node->getLeftChild()) {
-                    nextLevel.push_back(node->getLeftChild());
-                    newParents.push_back(node);
+                    nextLevel[index] = node->getLeftChild();
+                    newParents[index] = node;
+                    index++;
                 }
-                
                 if (node->getRightChild()) {
-                    nextLevel.push_back(node->getRightChild());
-                    newParents.push_back(node);
+                    nextLevel[index] = node->getRightChild();
+                    newParents[index] = node;
+                    index++;
                 }
             }
-            
-            if (!nextLevel.empty()) {
-                for (size_t i = 0; i < nextLevel.size(); i++) {
+
+            // Print the next level
+            if (nextLevelSize > 0) {
+                for (int i = 0; i < nextLevelSize; i++) {
                     LeftistNode<KeyType>* node = nextLevel[i];
                     LeftistNode<KeyType>* parent = newParents[i];
-                    
+
                     std::cout << node->getData().getKey() << "(" << node->getShortest() << ")";
                     if (parent) {
                         std::cout << "<under " << parent->getData().getKey() << ">";
                     }
-                    
-                    if (i < nextLevel.size() - 1) {
+
+                    if (i < nextLevelSize - 1) {
                         std::cout << " ";
                     }
                 }
                 std::cout << std::endl;
             }
-            
+
+            // Clean up the current level and parents arrays
+            delete[] currentLevel;
+            delete[] parents;
+
+            // Update for the next iteration
             currentLevel = nextLevel;
             parents = newParents;
+            currentLevelSize = nextLevelSize;
         }
+
+        // Clean up the final arrays
+        delete[] currentLevel;
+        delete[] parents;
     } else {
         std::cout << "Empty tree" << std::endl;
     }
@@ -622,14 +693,12 @@ void MinHeap<KeyType>::Initialize(const Element<KeyType> elements[], int numElem
     heap = new Element<KeyType>[capacity];
 
     // Copy elements into the heap
-    for (int i = 0; i < numElements; ++i) {
+    for (int i = 0; i < numElements; ++i)
         heap[size++] = elements[i];
-    }
 
     // Build the heap using bottom-up heap construction
-    for (int i = (size / 2) - 1; i >= 0; --i) {
+    for (int i = (size / 2) - 1; i >= 0; --i)
         heapifyDown(i);
-    }
 }
 
 template <typename KeyType>
@@ -639,27 +708,23 @@ void MinHeap<KeyType>::heapifyDown(int index) {
         int rightChild = 2 * index + 2;
         int smallest = index;
 
-        if (leftChild < size && heap[leftChild].getKey() < heap[smallest].getKey()) {
+        if (leftChild < size && heap[leftChild].getKey() < heap[smallest].getKey())
             smallest = leftChild;
-        }
-        if (rightChild < size && heap[rightChild].getKey() < heap[smallest].getKey()) {
+            
+        if (rightChild < size && heap[rightChild].getKey() < heap[smallest].getKey())
             smallest = rightChild;
-        }
 
         if (smallest != index) {
             std::swap(heap[index], heap[smallest]);
             index = smallest;
-        } else {
-            break;
-        }
+        } else break;
     }
 }
 
 template <typename KeyType>
 void MinHeap<KeyType>::Insert(const Element<KeyType>& element) {
-    if (size == capacity) {
+    if (size == capacity)
         resizeHeap();
-    }
 
     heap[size++] = element;
     int index = size - 1;
@@ -668,33 +733,101 @@ void MinHeap<KeyType>::Insert(const Element<KeyType>& element) {
         if (heap[index].getKey() < heap[parentIndex].getKey()) {
             std::swap(heap[index], heap[parentIndex]);
             index = parentIndex;
-        } else {
-            break;
-        }
+        } else break;
     }
 }
 
 template <typename KeyType>
 Element<KeyType>* MinHeap<KeyType>::DeleteMin(Element<KeyType>& minElement) {
-    if (IsEmpty()) {
-        return nullptr;
-    }
-
+    if (IsEmpty()) return nullptr;
     minElement = heap[0];
     heap[0] = heap[--size];
-
-    if (!IsEmpty()) {
-        heapifyDown(0);
-    }
+    if (!IsEmpty()) heapifyDown(0);
 
     return &minElement;
 }
 
 template <typename KeyType>
 void MinHeap<KeyType>::PrintHeap() const {
-    std::cout << "Heap: ";
-    for (int i = 0; i < size; ++i) {
-        std::cout << heap[i].getKey() << " ";
+    if (size == 0) {
+        std::cout << "Heap is empty" << std::endl;
+        return;
     }
-    std::cout << std::endl;
+
+    // Print the root
+    std::cout << "root: " << heap[0].getKey() << std::endl;
+
+    // Initialize arrays for the current level and parents
+    int currentLevelSize = 1;
+    int* currentLevelIndices = new int[currentLevelSize];
+    currentLevelIndices[0] = 0; // Root is at index 0
+
+    int* parentIndices = new int[currentLevelSize];
+    parentIndices[0] = -1; // Root has no parent
+
+    while (currentLevelSize > 0) {
+        // Calculate the size of the next level
+        int nextLevelSize = 0;
+        for (int i = 0; i < currentLevelSize; i++) {
+            int leftChild = 2 * currentLevelIndices[i] + 1;
+            int rightChild = 2 * currentLevelIndices[i] + 2;
+
+            if (leftChild < size) nextLevelSize++;
+            if (rightChild < size) nextLevelSize++;
+        }
+
+        // Allocate arrays for the next level and parent indices
+        int* nextLevelIndices = new int[nextLevelSize];
+        int* nextParentIndices = new int[nextLevelSize];
+
+        // Populate the next level and parent indices arrays
+        int index = 0;
+        for (int i = 0; i < currentLevelSize; i++) {
+            int currentIndex = currentLevelIndices[i];
+            int leftChild = 2 * currentIndex + 1;
+            int rightChild = 2 * currentIndex + 2;
+
+            if (leftChild < size) {
+                nextLevelIndices[index] = leftChild;
+                nextParentIndices[index] = currentIndex;
+                index++;
+            }
+            if (rightChild < size) {
+                nextLevelIndices[index] = rightChild;
+                nextParentIndices[index] = currentIndex;
+                index++;
+            }
+        }
+
+        // Print the next level
+        if (nextLevelSize > 0) {
+            for (int i = 0; i < nextLevelSize; i++) {
+                int nodeIndex = nextLevelIndices[i];
+                int parentIndex = nextParentIndices[i];
+
+                std::cout << heap[nodeIndex].getKey();
+                if (parentIndex != -1) {
+                    std::cout << "<under " << heap[parentIndex].getKey() << ">";
+                }
+
+                if (i < nextLevelSize - 1) {
+                    std::cout << " ";
+                }
+            }
+            std::cout << std::endl;
+        }
+
+        // Clean up the current level and parent indices arrays
+        delete[] currentLevelIndices;
+        delete[] parentIndices;
+
+        // Update for the next iteration
+        currentLevelIndices = nextLevelIndices;
+        parentIndices = nextParentIndices;
+        currentLevelSize = nextLevelSize;
+    }
+
+    // Clean up the final arrays
+    delete[] currentLevelIndices;
+    delete[] parentIndices;
 }
